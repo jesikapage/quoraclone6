@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
@@ -29,7 +30,7 @@ const Login = () => {
           </p>
 
           <div className="w-full space-y-3">
-            {/* Tombol Google Custom - Menggunakan Button Standard Quora Vibe */}
+            {/* Tombol Google */}
             <div className="flex justify-center w-full">
                <GoogleLogin 
                  onSuccess={handleGoogleSuccess} 
@@ -40,18 +41,24 @@ const Login = () => {
                />
             </div>
             
+            {/* Tombol Facebook - Dikembalikan lagi */}
             <button className="w-[280px] flex items-center justify-center gap-3 bg-[#181919] hover:bg-[#202020] text-white border border-[#333] py-2 px-4 rounded-md text-sm font-bold transition mx-auto">
-              <span className="text-blue-600 font-bold text-lg text-left">f</span> 
+              <span className="text-blue-600 font-bold text-lg">f</span> 
               Lanjutkan dengan Facebook
             </button>
             
-            <button className="text-[#939598] hover:underline text-sm mt-4">
-              Daftar dengan surel
-            </button>
+            <div className="pt-2">
+              <Link 
+                to="/register" 
+                className="text-[#939598] hover:underline text-sm inline-block"
+              >
+                Daftar dengan surel
+              </Link>
+            </div>
           </div>
 
           <p className="text-[11px] text-[#717274] mt-10">
-            Dengan melanjutkan, Anda menunjukkan bahwa Anda menyetujui <span className="text-[#2b69d1] cursor-pointer">Persyaratan Layanan</span> dan <span className="text-[#2b69d1] cursor-pointer">Kebijakan Privasi</span> Quora.
+            Dengan melanjutkan, Anda menunjukkan bahwa Anda menyetujui <span className="text-[#2b69d1] cursor-pointer hover:underline">Persyaratan Layanan</span> dan <span className="text-[#2b69d1] cursor-pointer hover:underline">Kebijakan Privasi</span> Quora.
           </p>
         </div>
 
@@ -65,7 +72,7 @@ const Login = () => {
               <input 
                 type="email" 
                 placeholder="Surel Anda"
-                className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1]"
+                className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1] transition"
               />
             </div>
             <div>
@@ -73,7 +80,7 @@ const Login = () => {
               <input 
                 type="password" 
                 placeholder="Kata sandi Anda"
-                className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1]"
+                className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1] transition"
               />
             </div>
             
@@ -86,12 +93,12 @@ const Login = () => {
           </div>
 
           {/* Footer Card */}
-          <div className="mt-auto pt-10 text-center">
+          <div className="mt-auto pt-10 text-center border-t border-[#333] md:border-none">
              <div className="flex flex-wrap justify-center gap-x-2 text-[11px] text-[#939598]">
-               <span>Tentang Kami</span><span>•</span>
-               <span>Karier</span><span>•</span>
-               <span>Privasi</span><span>•</span>
-               <span>Ketentuan</span>
+               <span className="hover:underline cursor-pointer">Tentang Kami</span><span>•</span>
+               <span className="hover:underline cursor-pointer">Karier</span><span>•</span>
+               <span className="hover:underline cursor-pointer">Privasi</span><span>•</span>
+               <span className="hover:underline cursor-pointer">Ketentuan</span>
              </div>
           </div>
         </div>
