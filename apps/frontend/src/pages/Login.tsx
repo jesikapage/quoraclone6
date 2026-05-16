@@ -1,9 +1,53 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { useAuthStore } from '../stores/auth.store'; // Memanggil Zustand yang dibuat sebelumnya
 
 const Login = () => {
-  const handleGoogleSuccess = (credentialResponse: any) => {
-    console.log("Login Success:", credentialResponse);
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.setAuth); // Mengambil fungsi setAuth dari Zustand
+
+  // State lokal untuk menampung ketikan user di form manual
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // Handler Login via Google OAuth
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    console.log("Google Credential Token:", credentialResponse.credential);
+    
+    // Data dummy sesuai kriteria user Google (Password null / tidak wajib)
+    const dummyGoogleUser = {
+      id: "99",
+      name: "Jesika Google User",
+      email: "jesika.oauth@gmail.com",
+      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
+    };
+
+    setAuth(dummyGoogleUser, credentialResponse.credential || "dummy-jwt-oauth-token");
+    
+    alert("Login Google Sukses! Mengalihkan ke Beranda...");
+    navigate('/'); 
+  };
+
+  const handleManualLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      alert("Harap isi surel dan sandi Anda!");
+      return;
+    }
+
+    const dummyManualUser = {
+      id: "1",
+      name: "Jesika Manager",
+      email: email,
+      avatarUrl: "https://api.dicebear.com/7.x/adventurer/svg?seed=Jesika"
+    };
+
+    setAuth(dummyManualUser, "dummy-jwt-token-from-manual-login");
+    
+    alert(`Masuk berhasil! Selamat datang kembali, ${dummyManualUser.name}`);
+    navigate('/');
   };
 
   return (
@@ -34,6 +78,7 @@ const Login = () => {
             <div className="flex justify-center w-full">
                <GoogleLogin 
                  onSuccess={handleGoogleSuccess} 
+                 onError={() => console.log("Login Failed")}
                  theme="filled_black" 
                  shape="rectangular"
                  text="continue_with"
@@ -41,8 +86,11 @@ const Login = () => {
                />
             </div>
             
-            {/* Tombol Facebook - Dikembalikan lagi */}
-            <button className="w-[280px] flex items-center justify-center gap-3 bg-[#181919] hover:bg-[#202020] text-white border border-[#333] py-2 px-4 rounded-md text-sm font-bold transition mx-auto">
+            {/* Tombol Facebook */}
+            <button 
+              type="button"
+              className="w-[280px] flex items-center justify-center gap-3 bg-[#181919] hover:bg-[#202020] text-white border border-[#333] py-2 px-4 rounded-md text-sm font-bold transition mx-auto"
+            >
               <span className="text-blue-600 font-bold text-lg">f</span> 
               Lanjutkan dengan Facebook
             </button>
@@ -63,7 +111,7 @@ const Login = () => {
         </div>
 
         {/* Sisi Kanan: Form Login Manual */}
-        <div className="w-full md:w-1/2 p-10 flex flex-col">
+        <form onSubmit={handleManualLogin} className="w-full md:w-1/2 p-10 flex flex-col">
           <h2 className="text-[#e2e2e2] text-sm font-bold border-b border-[#333] pb-2 mb-6">Masuk</h2>
           
           <div className="space-y-4 flex-grow">
@@ -71,6 +119,8 @@ const Login = () => {
               <label className="block text-[13px] font-bold text-[#e2e2e2] mb-1">Surel</label>
               <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Surel Anda"
                 className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1] transition"
               />
@@ -79,14 +129,19 @@ const Login = () => {
               <label className="block text-[13px] font-bold text-[#e2e2e2] mb-1">Sandi</label>
               <input 
                 type="password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Kata sandi Anda"
                 className="w-full bg-[#181919] border border-[#333] p-2.5 rounded-sm text-white text-sm focus:outline-none focus:border-[#2b69d1] transition"
               />
             </div>
             
             <div className="flex justify-between items-center pt-2">
-              <button className="text-[#939598] text-[13px] hover:underline">Lupa kata sandi?</button>
-              <button className="bg-[#2b69d1] hover:bg-[#3277ed] text-white px-6 py-2 rounded-full text-sm font-bold transition">
+              <button type="button" className="text-[#939598] text-[13px] hover:underline">Lupa kata sandi?</button>
+              <button 
+                type="submit" 
+                className="bg-[#2b69d1] hover:bg-[#3277ed] text-white px-6 py-2 rounded-full text-sm font-bold transition"
+              >
                 Masuk
               </button>
             </div>
@@ -101,7 +156,7 @@ const Login = () => {
                <span className="hover:underline cursor-pointer">Ketentuan</span>
              </div>
           </div>
-        </div>
+        </form>
 
       </div>
     </div>
