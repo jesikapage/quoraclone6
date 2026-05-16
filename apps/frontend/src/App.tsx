@@ -16,7 +16,7 @@ function App() {
         {/* Mengubah /beranda menjadi / */}
         <Route path="/" element={<ProtectedRoute><Beranda /></ProtectedRoute>} />
         
-        <Route path="/komentar/:postId" element={<ProtectedRoute><Komentar /></ProtectedRoute>}git add . />
+        <Route path="/komentar/:postId" element={<ProtectedRoute><Komentar /></ProtectedRoute>} />
         <Route path="/notifikasi" element={<ProtectedRoute><Notifikasi /></ProtectedRoute>} />
         
         {/* Jika mengetik URL ngawur, otomatis dilempar ke halaman utama (/) */}
