@@ -72,7 +72,6 @@ const IconDots = () => (
     <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
   </svg>
 );
-// ──────────────────────────────────────────────────────────────────────────
 
 export default function Beranda() {
   const { user, logout } = useAuthStore();
@@ -205,11 +204,9 @@ export default function Beranda() {
 
   return (
     <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans">
-
-      {/* ── Navbar ── */}
+      {/* Navbar */}
       <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
         <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
-
           <span
             className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
             onClick={() => navigate("/")}
@@ -229,24 +226,31 @@ export default function Beranda() {
           </div>
 
           <div className="flex items-center gap-1 ml-auto">
-            {[
-              { key: "home", icon: <IconHome />, label: "Beranda", to: "/" },
-              { key: "notif", icon: <IconBell />, label: "Notifikasi", to: "/notifikasi" },
-            ].map((item) => (
-              <Link
-                key={item.key}
-                to={item.to}
-                onClick={() => setActiveNav(item.key)}
-                title={item.label}
-                className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
-                  activeNav === item.key
-                    ? "text-[#b92b27] border-b-2 border-[#b92b27]"
-                    : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
-                }`}
-              >
-                {item.icon}
-              </Link>
-            ))}
+            <Link
+              to="/"
+              onClick={() => setActiveNav("home")}
+              title="Beranda"
+              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+                activeNav === "home"
+                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
+                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
+              }`}
+            >
+              <IconHome />
+            </Link>
+
+            <Link
+              to="/notifikasi"
+              onClick={() => setActiveNav("notif")}
+              title="Notifikasi"
+              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+                activeNav === "notif"
+                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
+                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
+              }`}
+            >
+              <IconBell />
+            </Link>
 
             <button
               onClick={() => setShowCreatePost(true)}
@@ -275,17 +279,15 @@ export default function Beranda() {
                     <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
                     <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
                   </div>
-                  {[
-                    { icon: "👤", label: "Edit Profil", action: () => { navigate("/profile/edit"); setShowMenu(null); } },
-                    { icon: "⚙️", label: "Pengaturan", action: () => setShowMenu(null) },
-                    { icon: "🚪", label: "Keluar", action: handleLogout },
-                  ].map((item) => (
-                    <button key={item.label} onClick={item.action}
-                      className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition"
-                    >
-                      <span>{item.icon}</span>{item.label}
-                    </button>
-                  ))}
+                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>👤</span>Edit Profil
+                  </button>
+                  <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>⚙️</span>Pengaturan
+                  </button>
+                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>🚪</span>Keluar
+                  </button>
                 </div>
               )}
             </div>
@@ -293,13 +295,11 @@ export default function Beranda() {
         </div>
       </nav>
 
-      {/* ── Main layout ── */}
+      {/* Main Layout */}
       <div className="max-w-[1000px] mx-auto px-4 pt-5 flex gap-5">
-
         {/* Feed */}
         <main className="flex-1 min-w-0 max-w-[570px] space-y-3">
-
-          {/* Shortcut bar */}
+          {/* Shortcut Bar */}
           <div className="bg-[#262626] border border-[#333] rounded-[3px] px-4 py-3 flex items-center gap-3">
             <img
               src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
@@ -309,7 +309,7 @@ export default function Beranda() {
             <button
               onClick={() => setShowCreatePost(true)}
               className="flex-1 text-left text-sm text-[#636466] bg-[#181919] border border-[#444] hover:border-[#2b69d1] rounded-[3px] px-3 py-2 transition"
-            >
+                >
               Tambahkan pertanyaan atau tautan
             </button>
           </div>
@@ -326,7 +326,7 @@ export default function Beranda() {
 
             return (
               <div key={post.id} className="bg-[#262626] border border-[#333] rounded-[3px] overflow-hidden">
-
+                {/* Header Kiriman */}
                 <div className="flex items-start justify-between px-4 pt-4 pb-2">
                   <div className="flex items-start gap-2.5">
                     <img src={post.user.avatar_url} alt="user" className="w-9 h-9 rounded-full border border-[#444] flex-shrink-0" />
@@ -348,40 +348,45 @@ export default function Beranda() {
                     </button>
                     {showMenu === post.id && (
                       <div className="absolute right-0 top-9 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-20 w-56 py-1">
-                        {[
-                          { icon: "🔗", label: "Salin tautan", action: () => { navigator.clipboard.writeText(`${window.location.origin}/komentar/${post.id}`); setShowMenu(null); } },
-                          { icon: "🚫", label: "Tidak tertarik dengan ini", action: () => setShowMenu(null) },
-                          { icon: "🔖", label: "Simpan", action: () => setShowMenu(null) },
-                          { icon: "⬇️", label: "Dukung turun pertanyaan", action: () => { handleDownvote(post.id); setShowMenu(null); } },
-                          { icon: "🚩", label: "Laporkan", action: () => setShowMenu(null) },
-                        ].map((item) => (
-                          <button key={item.label} onClick={item.action}
-                            className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition"
-                          >
-                            <span>{item.icon}</span>{item.label}
-                          </button>
-                        ))}
+                        <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                          <span>🔗</span>Salin tautan
+                        </button>
+                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                          <span>🚫</span>Tidak tertarik dengan ini
+                        </button>
+                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                          <span>🔖</span>Simpan
+                        </button>
+                        <button onClick={() => { handleDownvote(post.id); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                          <span>⬇️</span>Dukung turun pertanyaan
+                        </button>
+                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                          <span>🚩</span>Laporkan
+                        </button>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Konten — bold besar seperti Quora */}
+                {/* Konten Teks */}
                 <div className="px-4 pb-3">
-                  <p className="text-[17px] font-semibold text-[#e2e2e2] leading-snug hover:text-[#2b69d1] cursor-pointer transition">
-                    {post.content}
-                  </p>
+                  <Link to={`/post/${post.id}`}>
+                    <p className="text-[17px] font-semibold text-[#e2e2e2] leading-snug hover:text-[#2b69d1] cursor-pointer transition">
+                      {post.content}
+                    </p>
+                  </Link>
                 </div>
 
                 {post.image_url && (
                   <div className="pb-3 px-4">
-                    <img src={post.image_url} alt="post" className="w-full max-h-72 object-cover rounded-[3px] border border-[#333]" />
+                    <Link to={`/post/${post.id}`}>
+                      <img src={post.image_url} alt="post" className="w-full max-h-72 object-cover rounded-[3px] border border-[#333] cursor-pointer" />
+                    </Link>
                   </div>
                 )}
 
-                {/* Action bar */}
+                {/* Action Bar */}
                 <div className="border-t border-[#333] px-3 py-1 flex items-center gap-1">
-
                   <div className="flex items-center rounded-full border border-[#444] overflow-hidden mr-1">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleUpvote(post.id); }}
@@ -410,7 +415,7 @@ export default function Beranda() {
                   </div>
 
                   <Link
-                    to={`/komentar/${post.id}`}
+                    to={`/post/${post.id}`}
                     className="flex items-center gap-1.5 text-[13px] font-medium text-[#939598] hover:bg-[#333] hover:text-[#e2e2e2] px-3 py-1.5 rounded-full transition"
                   >
                     <IconComment />
@@ -431,13 +436,12 @@ export default function Beranda() {
                     <IconDots />
                   </button>
                 </div>
-
               </div>
             );
           })}
         </main>
 
-        {/* Sidebar kanan */}
+        {/* Sidebar Kanan */}
         <aside className="w-[300px] flex-shrink-0 hidden lg:block space-y-4">
           <div className="bg-[#262626] border border-[#333] rounded-[3px] overflow-hidden">
             <div className="h-16 bg-gradient-to-r from-[#b92b27] to-[#8b1a18]" />
