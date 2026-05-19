@@ -1,13 +1,14 @@
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google'; // Ubah import ini
 import { Link, useNavigate } from 'react-router-dom';
 import bgQuora from '../assets/BG QUORA.jpeg'; 
 
 const Register = () => {
   const navigate = useNavigate(); 
 
-  const handleGoogleSuccess = (credentialResponse: any) => {
-    console.log("Register via Google Success:", credentialResponse);
-  };
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: (tokenResponse) => console.log("Register Google Success:", tokenResponse),
+    onError: () => console.log("Login Failed"),
+  });
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,17 +18,16 @@ const Register = () => {
 
   return (
     <div 
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat font-sans"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${bgQuora})` }}
     >
       <div className="absolute inset-0 bg-black/15 z-0" />
 
-      {/* Main Container Card Box */}
       <div className="relative z-10 w-full max-w-[714px] bg-[#262626] text-[#b4b4b4] rounded shadow-2xl flex flex-col border border-[#333333] m-4 overflow-hidden">
         
         {/* HEADER */}
         <div className="w-full flex flex-col items-center pt-8 pb-5 text-center px-4">
-          <h1 className="text-[#b92b27] text-[52px] font-bold tracking-tight leading-none mb-1">Quora</h1>
+          <h1 className="text-[#b92b27] text-[52px] font-black tracking-tight leading-none mb-1">Quora</h1>
           <p className="text-[#87898c] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
           <p className="text-[#e2e2e2] text-[17px] font-bold tracking-wide max-w-[600px]">
             Tempat berbagi pengetahuan dan memahami dunia lebih baik
@@ -44,9 +44,15 @@ const Register = () => {
             </p>
 
             <div className="w-full space-y-3 flex flex-col items-center justify-center my-auto">
-              <div className="flex justify-center w-full max-w-[280px]">
-                 <GoogleLogin onSuccess={handleGoogleSuccess} theme="filled_black" shape="rectangular" text="signup_with" width="280px" />
-              </div>
+              {/* Tombol Google Kustom */}
+              <button 
+                type="button"
+                onClick={() => loginWithGoogle()}
+                className="w-[280px] h-[40px] flex items-center justify-center gap-3 bg-[#1c1c1c] hover:bg-[#222222] text-[#e2e2e2] border border-[#333333] rounded text-[14px] font-bold transition-colors"
+              >
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google" className="w-5 h-5" />
+                Lanjutkan dengan Google
+              </button>
               
               <p className="text-[#87898c] text-[13px] pt-4">
                 Sudah punya akun? <Link to="/login" className="text-[#2b69d1] hover:underline font-bold ml-1">Masuk</Link>

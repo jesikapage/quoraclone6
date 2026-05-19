@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google'; // Ubah import ini agar bisa bikin tombol kustom
 import { useAuthStore } from '../stores/auth.store'; 
 import bgQuora from '../assets/BG QUORA.jpeg'; 
 
@@ -11,20 +11,24 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleGoogleSuccess = async (credentialResponse: any) => {
-    console.log("Google Credential Token:", credentialResponse.credential);
-    
-    const dummyGoogleUser = {
-      id: "99",
-      name: "Jesika Google User",
-      email: "jesika.oauth@gmail.com",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
-    };
+  // Setup Google Login Kustom
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      console.log("Google Token:", tokenResponse.access_token);
+      
+      const dummyGoogleUser = {
+        id: "99",
+        name: "Jesika Google User",
+        email: "jesika.oauth@gmail.com",
+        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
+      };
 
-    setAuth(dummyGoogleUser, credentialResponse.credential || "dummy-jwt-oauth-token");
-    alert("Login Google Sukses! Mengalihkan ke Beranda...");
-    navigate('/'); 
-  };
+      setAuth(dummyGoogleUser, tokenResponse.access_token || "dummy-jwt-oauth-token");
+      alert("Login Google Sukses! Mengalihkan ke Beranda...");
+      navigate('/'); 
+    },
+    onError: () => console.log("Login Failed"),
+  });
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,25 +51,22 @@ const Login = () => {
 
   return (
     <div 
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat font-sans selection:bg-neutral-700"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat selection:bg-neutral-700"
       style={{ backgroundImage: `url(${bgQuora})` }}
     >
-      {/* Overlay Gelap Transparan */}
       <div className="absolute inset-0 bg-black/15 z-0" />
 
-      {/* Main Container Card Box */}
       <div className="relative z-10 w-full max-w-[714px] bg-[#262626] text-[#b4b4b4] rounded shadow-2xl flex flex-col border border-[#333333] m-4 overflow-hidden">
         
-        {/* HEADER: Logo & Slogan */}
+        {/* HEADER: Logo & Slogan (Font disatukan ke Font Pilihanmu, menghapus font-serif) */}
         <div className="w-full flex flex-col items-center pt-8 pb-5 text-center px-4">
-          <h1 className="text-[#b92b27] text-[52px] font-bold tracking-tight leading-none mb-1">Quora</h1>
+          <h1 className="text-[#b92b27] text-[52px] font-black tracking-tight leading-none mb-1">Quora</h1>
           <p className="text-[#87898c] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
           <p className="text-[#e2e2e2] text-[17px] font-bold tracking-wide max-w-[600px]">
             Tempat berbagi pengetahuan dan memahami dunia lebih baik
           </p>
         </div>
 
-        {/* BODY: Split Konten Kiri & Kanan */}
         <div className="flex flex-col md:flex-row border-t border-[#333333]">
           
           {/* SISI KIRI: OAuth Medsos & Terms */}
@@ -77,17 +78,15 @@ const Login = () => {
             </p>
 
             <div className="w-full flex flex-col items-center justify-center my-auto">
-              {/* Tombol Google */}
-              <div className="flex justify-center w-full max-w-[280px]">
-                 <GoogleLogin 
-                   onSuccess={handleGoogleSuccess} 
-                   onError={() => console.log("Login Failed")}
-                   theme="filled_black" 
-                   shape="rectangular"
-                   text="continue_with"
-                   width="280px"
-                 />
-              </div>
+              {/* Tombol Google Kustom (Bisa Berubah Font Mengikuti index.css) */}
+              <button 
+                type="button"
+                onClick={() => loginWithGoogle()}
+                className="w-[280px] h-[40px] flex items-center justify-center gap-3 bg-[#1c1c1c] hover:bg-[#222222] text-[#e2e2e2] border border-[#333333] rounded text-[14px] font-bold transition-colors"
+              >
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google" className="w-5 h-5" />
+                Lanjutkan dengan Google
+              </button>
             </div>
           </div>
 
