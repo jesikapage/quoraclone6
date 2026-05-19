@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom"; // 👈 Ditambahkan useLocation di sini
+import { toast, Toaster } from "sonner"; // 👈 1. Import Sonner untuk pop-up selamat datang
 import CreatePost from "./CreatePost";
 
 type Post = {
@@ -21,7 +22,6 @@ type Post = {
   sharedBy: string[];
 };
 
-// ── SVG Icons ──────────────────────────────────────────────────────────────
 const IconUpvote = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="18 15 12 9 6 15" />
@@ -77,10 +77,27 @@ const IconDots = () => (
 export default function Beranda() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 Ambil data lokasi router saat ini
   const [posts, setPosts] = useState<Post[]>([]);
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [activeNav, setActiveNav] = useState("home");
+
+  // 👈 2. Efek untuk menangkap data dari halaman Login & memicu Sonner Toast
+  useEffect(() => {
+    if (location.state?.fromLogin) {
+      const namaUser = user?.name || "Pengguna";
+      
+      // Munculkan pop-up selamat datang estetik
+      toast.success(`Selamat Datang, ${namaUser}!`, {
+        description: "Anda berhasil masuk ke Quora Clone.",
+        duration: 4000,
+      });
+
+      // Bersihkan state agar notif tidak muncul berkali-kali jika user me-refresh beranda
+      window.history.replaceState({}, document.title);
+    }
+  }, [location, user]);
 
   useEffect(() => {
     const dummyPosts: Post[] = [
@@ -205,6 +222,9 @@ export default function Beranda() {
 
   return (
     <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans">
+      
+      {/* 👈 3. WAJIB Taruh Toaster di paling atas return untuk merender pop-up-nya */}
+      <Toaster position="top-right" theme="dark" closeButton RICH-COLORS />
 
       {/* ── Navbar ── */}
       <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
@@ -310,7 +330,7 @@ export default function Beranda() {
               onClick={() => setShowCreatePost(true)}
               className="flex-1 text-left text-sm text-[#636466] bg-[#181919] border border-[#444] hover:border-[#2b69d1] rounded-[3px] px-3 py-2 transition"
             >
-              Tambahkan pertanyaan atau tautan
+              Taimbahkan pertanyaan atau tautan
             </button>
           </div>
 
