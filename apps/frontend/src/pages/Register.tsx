@@ -95,7 +95,6 @@ const Register = () => {
             <span>© Quora, Inc. 2026</span>
           </div>
         </div>
-
       </div>
     </div>
   );
