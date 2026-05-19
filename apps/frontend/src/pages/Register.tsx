@@ -43,12 +43,12 @@ const Register = () => {
               Dengan mendaftar, Anda menunjukkan bahwa Anda menyetujui <span className="text-[#2b69d1] cursor-pointer hover:underline">Persyaratan Layanan</span> Quora.
             </p>
 
-            <div className="w-full space-y-3 flex flex-col items-center">
+            <div className="w-full space-y-3 flex flex-col items-center justify-center my-auto">
               <div className="flex justify-center w-full max-w-[280px]">
                  <GoogleLogin onSuccess={handleGoogleSuccess} theme="filled_black" shape="rectangular" text="signup_with" width="280px" />
               </div>
               
-              <p className="text-[#87898c] text-[13px] mt-6">
+              <p className="text-[#87898c] text-[13px] pt-4">
                 Sudah punya akun? <Link to="/login" className="text-[#2b69d1] hover:underline font-bold ml-1">Masuk</Link>
               </p>
             </div>
@@ -80,20 +80,6 @@ const Register = () => {
             </div>
           </form>
 
-        </div>
-
-        {/* FOOTER */}
-        <div className="w-full bg-[#1f1f1f] border-t border-[#333333] py-3.5 px-4 text-center">
-          <div className="flex flex-wrap justify-center gap-x-2 text-[12px] text-[#87898c] font-medium">
-            <span className="hover:underline cursor-pointer">Tentang Kami</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Karier</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Privasi</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Ketentuan</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Kontak</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Bahasa</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Pers</span><span>·</span>
-            <span>© Quora, Inc. 2026</span>
-          </div>
         </div>
       </div>
     </div>
