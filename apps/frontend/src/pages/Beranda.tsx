@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
-import { useNavigate, Link, useLocation } from "react-router-dom"; // 👈 Ditambahkan useLocation di sini
-import { toast, Toaster } from "sonner"; // 👈 1. Import Sonner untuk pop-up selamat datang
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { toast, Toaster } from "sonner"; 
 import CreatePost from "./CreatePost";
 
 type Post = {
@@ -83,7 +83,6 @@ export default function Beranda() {
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [activeNav, setActiveNav] = useState("home");
 
-  // 👈 2. Efek untuk menangkap data dari halaman Login & memicu Sonner Toast
   useEffect(() => {
     if (location.state?.fromLogin) {
       const namaUser = user?.name || "Pengguna";
