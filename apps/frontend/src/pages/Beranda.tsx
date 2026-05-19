@@ -19,6 +19,20 @@ type Post = {
   };
 };
 
+// Dark mode color tokens
+const C = {
+  bg: "#181919",
+  surface: "#262626",
+  surfaceHover: "#2f2f2f",
+  border: "#333333",
+  textPrimary: "#e2e2e2",
+  textSecondary: "#939598",
+  textMuted: "#636466",
+  red: "#B92B27",
+  blue: "#2B69D1",
+  blueHover: "#1a4fa0",
+};
+
 function timeAgo(dateStr: string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (diff < 60) return `${diff} detik lalu`;
@@ -34,72 +48,101 @@ function PostCard({ post }: { post: Post }) {
   return (
     <article
       style={{
-        background: "#ffffff",
-        borderBottom: "1px solid #dee0e1",
+        background: C.surface,
+        borderBottom: `1px solid ${C.border}`,
         padding: "16px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
         marginBottom: "24px",
         borderRadius: "4px",
       }}
     >
+      {/* Author */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <img
             src={post.user.avatar_url}
             alt={post.user.name}
-            style={{ width: 36, height: 36, borderRadius: "50%", border: "1px solid #dee0e1", flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${C.border}`, flexShrink: 0 }}
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 600, fontSize: 14, color: "#282829", cursor: "pointer" }}>
+              <span style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontWeight: 600, fontSize: 14,
+                color: C.textPrimary, cursor: "pointer",
+              }}>
                 {post.user.name}
               </span>
-              <span style={{ color: "#636466", fontSize: 13 }}>·</span>
-              <span style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500, fontSize: 13, color: "#2B69D1", cursor: "pointer" }}>
+              <span style={{ color: C.textMuted, fontSize: 13 }}>·</span>
+              <span style={{
+                fontFamily: "Inter, system-ui, sans-serif",
+                fontWeight: 500, fontSize: 13,
+                color: C.blue, cursor: "pointer",
+              }}>
                 Ikuti
               </span>
             </div>
-            <p style={{ fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, color: "#636466", lineHeight: 1.4, margin: 0 }}>
+            {/* Caption / User Bio — Inter 13px */}
+            <p style={{
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 13, color: C.textSecondary,
+              lineHeight: 1.4, margin: 0,
+            }}>
               {timeAgo(post.created_at)}
             </p>
           </div>
         </div>
-        <button style={{ color: "#939598", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+        <button style={{ color: C.textMuted, background: "none", border: "none", cursor: "pointer", padding: 4 }}>
           <X size={18} />
         </button>
       </div>
 
-      <h2
-        style={{
-          fontFamily: "Inter, system-ui, sans-serif",
-          fontSize: 18, fontWeight: 700,
-          color: "#282829", lineHeight: 1.3,
-          margin: "8px 0", cursor: "pointer",
-        }}
-      >
+      {/* Question / Judul Post — Inter 18px Bold */}
+      <h2 style={{
+        fontFamily: "Inter, system-ui, sans-serif",
+        fontSize: 18, fontWeight: 700,
+        color: C.textPrimary, lineHeight: 1.3,
+        margin: "8px 0", cursor: "pointer",
+      }}>
         {post.content}
       </h2>
 
+      {/* Body / Answer Text — Georgia serif 15px */}
+      <p style={{
+        fontFamily: "Georgia, 'Times New Roman', serif",
+        fontSize: 15, fontWeight: 400,
+        color: C.textSecondary, lineHeight: 1.6,
+        margin: "8px 0",
+      }}>
+        Klik untuk membaca jawaban selengkapnya...
+      </p>
+
+      {/* Gambar */}
       {post.image_url && (
         <img
           src={post.image_url}
           alt="post"
-          style={{ width: "100%", maxHeight: 256, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: "1px solid #dee0e1" }}
+          style={{
+            width: "100%", maxHeight: 256, objectFit: "cover",
+            borderRadius: 4, marginBottom: 12,
+            border: `1px solid ${C.border}`,
+          }}
         />
       )}
 
-      <div style={{ borderTop: "1px solid #dee0e1", paddingTop: 8, display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
-        <div style={{ display: "flex", borderRadius: 100, border: "1px solid #dee0e1", overflow: "hidden" }}>
+      {/* Action Bar — Inter 13px */}
+      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+        <div style={{ display: "flex", borderRadius: 100, border: `1px solid ${C.border}`, overflow: "hidden" }}>
           <button
             onClick={() => { setLiked((p) => !p); setLikeCount((p) => (liked ? p - 1 : p + 1)); }}
             style={{
               display: "flex", alignItems: "center", gap: 5,
               padding: "5px 12px",
-              background: liked ? "#EBF0FF" : "#fff",
-              color: liked ? "#2B69D1" : "#636466",
+              background: liked ? "#1a2a4a" : C.surface,
+              color: liked ? C.blue : C.textSecondary,
               fontFamily: "Inter, system-ui, sans-serif",
               fontSize: 13, fontWeight: 500,
-              border: "none", borderRight: "1px solid #dee0e1",
+              border: "none", borderRight: `1px solid ${C.border}`,
               cursor: "pointer",
             }}
           >
@@ -108,8 +151,8 @@ function PostCard({ post }: { post: Post }) {
           <button
             style={{
               display: "flex", alignItems: "center", justifyContent: "center",
-              padding: "5px 10px", background: "#fff",
-              color: "#636466", border: "none", cursor: "pointer",
+              padding: "5px 10px", background: C.surface,
+              color: C.textSecondary, border: "none", cursor: "pointer",
             }}
           >
             <ThumbsDown size={14} />
@@ -121,9 +164,9 @@ function PostCard({ post }: { post: Post }) {
           style={{
             display: "flex", alignItems: "center", gap: 5,
             padding: "5px 12px", borderRadius: 100,
-            border: "1px solid #dee0e1",
+            border: `1px solid ${C.border}`,
             fontFamily: "Inter, system-ui, sans-serif",
-            fontSize: 13, fontWeight: 500, color: "#636466",
+            fontSize: 13, fontWeight: 500, color: C.textSecondary,
             textDecoration: "none",
           }}
         >
@@ -134,16 +177,16 @@ function PostCard({ post }: { post: Post }) {
           style={{
             display: "flex", alignItems: "center", gap: 5,
             padding: "5px 12px", borderRadius: 100,
-            border: "1px solid #dee0e1", background: "#fff",
+            border: `1px solid ${C.border}`, background: C.surface,
             fontFamily: "Inter, system-ui, sans-serif",
-            fontSize: 13, fontWeight: 500, color: "#636466",
+            fontSize: 13, fontWeight: 500, color: C.textSecondary,
             cursor: "pointer",
           }}
         >
           <Repeat2 size={14} /> Bagikan
         </button>
 
-        <button style={{ marginLeft: "auto", color: "#939598", background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+        <button style={{ marginLeft: "auto", color: C.textMuted, background: "none", border: "none", cursor: "pointer", padding: 4 }}>
           <MoreHorizontal size={18} />
         </button>
       </div>
@@ -153,8 +196,12 @@ function PostCard({ post }: { post: Post }) {
 
 function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #dee0e1", borderRadius: 4, marginBottom: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: "1px solid #dee0e1" }}>
+    <div style={{
+      background: C.surface, border: `1px solid ${C.border}`,
+      borderRadius: 4, marginBottom: 24,
+      boxShadow: "0 1px 3px rgba(0,0,0,0.4)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
         <img src={avatarUrl} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0 }} />
         <input
           type="text"
@@ -163,7 +210,7 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
           style={{
             flex: 1, border: "none", outline: "none", background: "transparent",
             fontFamily: "Inter, system-ui, sans-serif", fontSize: 15,
-            color: "#939598", cursor: "pointer",
+            color: C.textMuted, cursor: "pointer",
           }}
         />
       </div>
@@ -178,13 +225,14 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
             style={{
               flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
               padding: "10px 0",
-              borderLeft: i > 0 ? "1px solid #dee0e1" : "none",
-              background: "#fff", border: "none",
-              fontFamily: "Inter, system-ui, sans-serif", fontSize: 14, fontWeight: 500,
-              color: "#636466", cursor: "pointer",
+              borderLeft: i > 0 ? `1px solid ${C.border}` : "none",
+              background: C.surface, border: "none",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 14, fontWeight: 500,
+              color: C.textSecondary, cursor: "pointer",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#F1F2F2"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#fff"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surface; }}
           >
             {item.icon} {item.label}
           </button>
@@ -195,30 +243,12 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
 }
 
 const LEFT_TOPICS = [
-  {
-    label: "Bahasa Inggris",
-    img: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?w=100&q=80",
-  },
-  {
-    label: "Budaya populer",
-    img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&q=80",
-  },
-  {
-    label: "Pendidikan",
-    img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=100&q=80",
-  },
-  {
-    label: "Kesehatan",
-    img: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=100&q=80",
-  },
-  {
-    label: "Musik",
-    img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&q=80",
-  },
-  {
-    label: "Teknologi",
-    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&q=80",
-  },
+  { label: "Bahasa Inggris", img: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?w=100&q=80" },
+  { label: "Budaya populer", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&q=80" },
+  { label: "Pendidikan",     img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=100&q=80" },
+  { label: "Kesehatan",      img: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=100&q=80" },
+  { label: "Musik",          img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&q=80" },
+  { label: "Teknologi",      img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&q=80" },
 ];
 
 const DUMMY_POSTS: Post[] = [
@@ -227,20 +257,14 @@ const DUMMY_POSTS: Post[] = [
     content: "Bagaimana cara mengoptimalkan penggunaan AWS Lambda untuk backend aplikasi skala besar?",
     image_url: null,
     created_at: "2026-05-16T12:00:00Z",
-    user: {
-      name: "Rito Backend Developer",
-      avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Rito",
-    },
+    user: { name: "Rito Backend Developer", avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Rito" },
   },
   {
     id: "102",
     content: "Desain Quora Clone kita terlihat sangat responsif menggunakan Tailwind CSS!",
     image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500",
     created_at: "2026-05-16T14:30:00Z",
-    user: {
-      name: "Prilia UI/UX",
-      avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia",
-    },
+    user: { name: "Prilia UI/UX", avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia" },
   },
 ];
 
@@ -278,16 +302,18 @@ export default function Beranda() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F7F7F8", fontFamily: "Inter, system-ui, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: "Inter, system-ui, sans-serif" }}>
 
-      {/* NAVBAR */}
-      <header style={{ position: "sticky", top: 0, zIndex: 50, background: "#ffffff", borderBottom: "1px solid #dee0e1", height: 50 }}>
+      {/* NAVBAR — tinggi 50px sticky */}
+      <header style={{ position: "sticky", top: 0, zIndex: 50, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 50 }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 16px", height: "100%", display: "flex", alignItems: "center", gap: 8 }}>
 
-          <Link to="/" style={{ color: "#B92B27", fontWeight: 900, fontSize: 22, textDecoration: "none", letterSpacing: -1, flexShrink: 0, marginRight: 4 }}>
+          {/* Logo */}
+          <Link to="/" style={{ color: C.red, fontWeight: 900, fontSize: 22, textDecoration: "none", letterSpacing: -1, flexShrink: 0, marginRight: 4 }}>
             Quora
           </Link>
 
+          {/* Nav — Navigation/Tabs Inter 13px Medium */}
           <nav style={{ display: "flex", alignItems: "center", height: 50 }}>
             {NAV_ITEMS.map((item) => {
               const isActive = activeNav === item.to;
@@ -299,66 +325,69 @@ export default function Beranda() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                     padding: "0 12px", height: "100%",
-                    borderBottom: isActive ? "2px solid #B92B27" : "2px solid transparent",
+                    borderBottom: isActive ? `2px solid ${C.red}` : "2px solid transparent",
                     borderTop: "none", borderLeft: "none", borderRight: "none",
-                    color: isActive ? "#B92B27" : "#636466",
+                    color: isActive ? C.red : C.textSecondary,
                     background: "none",
                     fontFamily: "Inter, system-ui, sans-serif", fontSize: 11, fontWeight: 500,
-                    cursor: "pointer", gap: 2,
-                    transition: "background 0.15s",
+                    cursor: "pointer", gap: 2, transition: "background 0.15s",
                   }}
                   onMouseEnter={(e) => {
-                    if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = "#F1F2F2";
+                    if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover;
                   }}
                   onMouseLeave={(e) => {
                     (e.currentTarget as HTMLButtonElement).style.background = "transparent";
                   }}
                 >
-                  <Icon size={20} color={isActive ? "#B92B27" : "#636466"} />
+                  <Icon size={20} color={isActive ? C.red : C.textSecondary} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
+          {/* Search Bar */}
           <div style={{ flex: 1, maxWidth: 220, position: "relative", marginLeft: 8 }}>
-            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#939598" }} />
+            <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: C.textSecondary }} />
             <input
               type="search"
               placeholder="Cari Quora"
               style={{
-                width: "100%", background: "#ffffff", border: "1px solid #dee0e1",
+                width: "100%", background: C.bg,
+                border: `1px solid ${C.border}`,
                 borderRadius: 3, padding: "6px 12px 6px 30px", fontSize: 14,
-                color: "#282829", outline: "none", boxSizing: "border-box",
+                color: C.textPrimary, outline: "none", boxSizing: "border-box",
                 fontFamily: "Inter, system-ui, sans-serif",
               }}
             />
           </div>
 
+          {/* Right */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
             <img
               src={user.avatarUrl}
               alt="avatar"
-              style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid #dee0e1", cursor: "pointer" }}
+              style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${C.border}`, cursor: "pointer" }}
             />
-            <Globe size={20} style={{ color: "#636466", cursor: "pointer" }} />
+            <Globe size={20} style={{ color: C.textSecondary, cursor: "pointer" }} />
             <button
               onClick={handleLogout}
               style={{
                 fontFamily: "Inter, system-ui, sans-serif", fontSize: 13, fontWeight: 500,
-                color: "#636466", border: "1px solid #dee0e1", borderRadius: 3,
-                padding: "5px 10px", background: "#fff", cursor: "pointer",
+                color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3,
+                padding: "5px 10px", background: C.surface, cursor: "pointer",
               }}
             >
               Keluar
             </button>
+            {/* Button Text — Inter 14px Medium */}
             <button
               style={{
                 display: "flex", alignItems: "center", gap: 4,
-                background: "#B92B27", color: "#fff", border: "none", borderRadius: 3,
+                background: C.red, color: "#fff", border: "none", borderRadius: 3,
                 padding: "6px 12px",
                 fontFamily: "Inter, system-ui, sans-serif",
-                fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
+                fontSize: 14, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
               }}
             >
               Tambah pertanyaan <ChevronDown size={14} />
@@ -367,7 +396,7 @@ export default function Beranda() {
         </div>
       </header>
 
-      {/* BODY */}
+      {/* BODY — max 1000px */}
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "16px", display: "flex", gap: 24 }}>
 
         {/* Sidebar Kiri */}
@@ -376,16 +405,23 @@ export default function Beranda() {
             style={{
               display: "flex", alignItems: "center", gap: 8, width: "100%",
               padding: "8px 12px", borderRadius: 3, border: "none",
-              background: "none", cursor: "pointer", fontSize: 13, fontWeight: 500,
-              color: "#282829", textAlign: "left",
+              background: "none", cursor: "pointer",
+              fontFamily: "Inter, system-ui, sans-serif",
+              fontSize: 13, fontWeight: 500,
+              color: C.textPrimary, textAlign: "left",
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#F1F2F2"; }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
           >
-            <Plus size={16} color="#636466" /> Buat Ruang
+            <Plus size={16} color={C.textSecondary} /> Buat Ruang
           </button>
 
-          <p style={{ fontSize: 11, color: "#939598", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", padding: "12px 12px 4px" }}>
+          <p style={{
+            fontFamily: "Inter, system-ui, sans-serif",
+            fontSize: 11, color: C.textMuted, fontWeight: 600,
+            textTransform: "uppercase", letterSpacing: "0.05em",
+            padding: "12px 12px 4px",
+          }}>
             Topik
           </p>
 
@@ -396,20 +432,17 @@ export default function Beranda() {
                 style={{
                   display: "flex", alignItems: "center", gap: 8, width: "100%",
                   padding: "8px 12px", borderRadius: 3, border: "none",
-                  background: "none", cursor: "pointer", fontSize: 13,
-                  color: "#282829", textAlign: "left",
+                  background: "none", cursor: "pointer",
+                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontSize: 13, color: C.textPrimary, textAlign: "left",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#F1F2F2"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
               >
                 <img
                   src={topic.img}
                   alt={topic.label}
-                  style={{
-                    width: 28, height: 28, borderRadius: 4,
-                    objectFit: "cover", flexShrink: 0,
-                    border: "1px solid #dee0e1",
-                  }}
+                  style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.border}` }}
                 />
                 {topic.label}
               </button>
@@ -417,23 +450,23 @@ export default function Beranda() {
           })}
 
           <div style={{ marginTop: 24, padding: "0 12px" }}>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 8px" }}>
-              {FOOTER_LINKS.map((l) => {
-                return (
-                  <a key={l} href="#" style={{ fontSize: 11, color: "#939598", textDecoration: "none" }}>
-                    {l}
-                  </a>
-                );
-              })}
-            </div>
-            <p style={{ fontSize: 11, color: "#939598", marginTop: 6 }}>© 2025 Quora Clone</p>
-          </div>
+          <p style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.6, margin: 0 }}>
+            {FOOTER_LINKS.map((l, i) => (
+              <span key={l}>
+                <a href="#" style={{ color: C.textMuted, textDecoration: "none" }}>{l}</a>
+                {i < FOOTER_LINKS.length - 1 && <span> · </span>}
+              </span>
+            ))}
+          </p>
+          <p style={{ fontSize: 11, color: C.textMuted, marginTop: 6 }}>© 2025 Quora</p>
+        </div>
         </aside>
 
-        {/* Feed Tengah */}
+        {/* Feed Tengah — max 570px */}
         <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
           <FeedTabs avatarUrl={user.avatarUrl} />
           <div>
+            {/* TODO (Fadjri): ganti dengan data dari API */}
             {posts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
@@ -442,8 +475,8 @@ export default function Beranda() {
 
         {/* Sidebar Kanan */}
         <aside style={{ width: 180, flexShrink: 0 }} className="right-sidebar">
-          <div style={{ background: "#fff", border: "1px solid #dee0e1", borderRadius: 4, padding: 16, textAlign: "center" }}>
-            <p style={{ fontSize: 12, color: "#939598" }}>Ruang iklan</p>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: 16, textAlign: "center" }}>
+            <p style={{ fontSize: 12, color: C.textMuted }}>Ruang iklan</p>
           </div>
         </aside>
       </div>
@@ -455,6 +488,8 @@ export default function Beranda() {
           .lg-sidebar { display: block; }
           .right-sidebar { display: block; }
         }
+        input[type="search"]::-webkit-search-cancel-button { display: none; }
+        input::placeholder { color: #636466; }
       `}</style>
     </div>
   );
