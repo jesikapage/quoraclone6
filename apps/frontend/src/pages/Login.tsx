@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google'; // Ubah import ini agar bisa bikin tombol kustom
+import { GoogleLogin } from '@react-oauth/google'; 
 import { useAuthStore } from '../stores/auth.store'; 
 import bgQuora from '../assets/BG QUORA.jpeg'; 
 
@@ -11,29 +11,26 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Setup Google Login Kustom
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      console.log("Google Token:", tokenResponse.access_token);
-      
-      const dummyGoogleUser = {
-        id: "99",
-        name: "Jesika Google User",
-        email: "jesika.oauth@gmail.com",
-        avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
-      };
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    console.log("Google Credential Token:", credentialResponse.credential);
+    
+    const dummyGoogleUser = {
+      id: "99",
+      name: "Jesika Google User",
+      email: "jesika.oauth@gmail.com",
+      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
+    };
 
-      setAuth(dummyGoogleUser, tokenResponse.access_token || "dummy-jwt-oauth-token");
-      alert("Login Google Sukses! Mengalihkan ke Beranda...");
-      navigate('/'); 
-    },
-    onError: () => console.log("Login Failed"),
-  });
+    setAuth(dummyGoogleUser, credentialResponse.credential || "dummy-jwt-oauth-token");
+    // ALERT DIHAPUS: Langsung mengalihkan ke Beranda secara mulus
+    navigate('/'); 
+  };
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      alert("Harap isi surel dan sandi Anda!");
+      // ALERT DIHAPUS: Sebagai gantinya, form tidak akan tersubmit jika kosong karena diredam otomatis, 
+      // atau kamu bisa biarkan HTML HTML5 handling validasinya nanti.
       return;
     }
 
@@ -45,7 +42,7 @@ const Login = () => {
     };
 
     setAuth(dummyManualUser, "dummy-jwt-token-from-manual-login");
-    alert(`Masuk berhasil! Selamat datang kembali, ${dummyManualUser.name}`);
+    // ALERT DIHAPUS: Langsung masuk ke beranda tanpa interupsi pop-up kotak abu-abu
     navigate('/');
   };
 
@@ -58,7 +55,7 @@ const Login = () => {
 
       <div className="relative z-10 w-full max-w-[714px] bg-[#262626] text-[#b4b4b4] rounded shadow-2xl flex flex-col border border-[#333333] m-4 overflow-hidden">
         
-        {/* HEADER: Logo & Slogan (Font disatukan ke Font Pilihanmu, menghapus font-serif) */}
+        {/* HEADER: Logo & Slogan */}
         <div className="w-full flex flex-col items-center pt-8 pb-5 text-center px-4">
           <h1 className="text-[#b92b27] text-[52px] font-black tracking-tight leading-none mb-1">Quora</h1>
           <p className="text-[#87898c] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
@@ -67,6 +64,7 @@ const Login = () => {
           </p>
         </div>
 
+        {/* BODY */}
         <div className="flex flex-col md:flex-row border-t border-[#333333]">
           
           {/* SISI KIRI: OAuth Medsos & Terms */}
@@ -78,15 +76,16 @@ const Login = () => {
             </p>
 
             <div className="w-full flex flex-col items-center justify-center my-auto">
-              {/* Tombol Google Kustom (Bisa Berubah Font Mengikuti index.css) */}
-              <button 
-                type="button"
-                onClick={() => loginWithGoogle()}
-                className="w-[280px] h-[40px] flex items-center justify-center gap-3 bg-[#1c1c1c] hover:bg-[#222222] text-[#e2e2e2] border border-[#333333] rounded text-[14px] font-bold transition-colors"
-              >
-                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google" className="w-5 h-5" />
-                Lanjutkan dengan Google
-              </button>
+              <div className="flex justify-center w-full max-w-[280px]">
+                 <GoogleLogin 
+                   onSuccess={handleGoogleSuccess} 
+                   onError={() => console.log("Login Failed")}
+                   theme="filled_black" 
+                   shape="rectangular"
+                   text="continue_with"
+                   width="280px"
+                 />
+              </div>
             </div>
           </div>
 
@@ -103,6 +102,7 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Surel Anda"
                   className="w-full bg-[#1c1c1c] border border-[#333333] px-3 py-2 text-sm text-white placeholder-[#555555] rounded-sm outline-none focus:border-[#2b69d1] transition-colors"
+                  required
                 />
               </div>
               <div>
@@ -113,6 +113,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Kata sandi Anda"
                   className="w-full bg-[#1c1c1c] border border-[#333333] px-3 py-2 text-sm text-white placeholder-[#555555] rounded-sm outline-none focus:border-[#2b69d1] transition-colors"
+                  required
                 />
               </div>
               

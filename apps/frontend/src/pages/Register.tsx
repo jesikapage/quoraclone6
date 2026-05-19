@@ -1,18 +1,17 @@
-import { useGoogleLogin } from '@react-oauth/google'; // Ubah import ini
+import { GoogleLogin } from '@react-oauth/google'; 
 import { Link, useNavigate } from 'react-router-dom';
 import bgQuora from '../assets/BG QUORA.jpeg'; 
 
 const Register = () => {
   const navigate = useNavigate(); 
 
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: (tokenResponse) => console.log("Register Google Success:", tokenResponse),
-    onError: () => console.log("Login Failed"),
-  });
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    console.log("Register via Google Success:", credentialResponse);
+  };
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Pendaftaran berhasil! Silakan masuk.");
+    // ALERT DIHAPUS: Langsung melempar user ke halaman login setelah berhasil buat akun
     navigate('/login'); 
   };
 
@@ -44,15 +43,15 @@ const Register = () => {
             </p>
 
             <div className="w-full space-y-3 flex flex-col items-center justify-center my-auto">
-              {/* Tombol Google Kustom */}
-              <button 
-                type="button"
-                onClick={() => loginWithGoogle()}
-                className="w-[280px] h-[40px] flex items-center justify-center gap-3 bg-[#1c1c1c] hover:bg-[#222222] text-[#e2e2e2] border border-[#333333] rounded text-[14px] font-bold transition-colors"
-              >
-                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/web-24dp/logo_googleg_color_24dp.png" alt="Google" className="w-5 h-5" />
-                Lanjutkan dengan Google
-              </button>
+              <div className="flex justify-center w-full max-w-[280px]">
+                 <GoogleLogin 
+                   onSuccess={handleGoogleSuccess} 
+                   theme="filled_black" 
+                   shape="rectangular" 
+                   text="signup_with" 
+                   width="280px" 
+                 />
+              </div>
               
               <p className="text-[#87898c] text-[13px] pt-4">
                 Sudah punya akun? <Link to="/login" className="text-[#2b69d1] hover:underline font-bold ml-1">Masuk</Link>
