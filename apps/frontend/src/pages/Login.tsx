@@ -22,8 +22,9 @@ const Login = () => {
     };
 
     setAuth(dummyGoogleUser, credentialResponse.credential || "dummy-jwt-oauth-token");
-    // ALERT DIHAPUS: Langsung mengalihkan ke Beranda secara mulus
-    navigate('/'); 
+    
+    // TEPAT DI SINI: Kita lempar ke beranda bawa paket data rahasia buat Sonner
+    navigate('/', { state: { fromLogin: true } }); 
   };
 
   const handleManualLogin = (e: React.FormEvent) => {
