@@ -12,7 +12,8 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/bun": "latest",
-    "@types/pg": "^8.20.0"
+    "@types/pg": "^8.20.0",
+    "tsdown": "^0.22.0"
   },
   "peerDependencies": {
     "typescript": "^5"
