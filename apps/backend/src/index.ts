@@ -50,6 +50,8 @@ const app = new Elysia()
   });
 
 
-export const fetch = (request: Request) => app.handle(request);
+export const fetch = async (request: Request) => {
+  return await app.handle(request);
+};
 
 export type App = typeof app;
