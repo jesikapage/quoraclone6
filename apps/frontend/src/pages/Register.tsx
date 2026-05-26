@@ -1,4 +1,4 @@
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin } from '@react-oauth/google'; 
 import { Link, useNavigate } from 'react-router-dom';
 import bgQuora from '../assets/BG QUORA.jpeg'; 
 
@@ -11,23 +11,22 @@ const Register = () => {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Pendaftaran berhasil! Silakan masuk.");
+    // ALERT DIHAPUS: Langsung melempar user ke halaman login setelah berhasil buat akun
     navigate('/login'); 
   };
 
   return (
     <div 
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat font-sans"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${bgQuora})` }}
     >
       <div className="absolute inset-0 bg-black/15 z-0" />
 
-      {/* Main Container Card Box */}
       <div className="relative z-10 w-full max-w-[714px] bg-[#262626] text-[#b4b4b4] rounded shadow-2xl flex flex-col border border-[#333333] m-4 overflow-hidden">
         
         {/* HEADER */}
         <div className="w-full flex flex-col items-center pt-8 pb-5 text-center px-4">
-          <h1 className="text-[#b92b27] text-[52px] font-bold tracking-tight leading-none mb-1">Quora</h1>
+          <h1 className="text-[#b92b27] text-[52px] font-black tracking-tight leading-none mb-1">Quora</h1>
           <p className="text-[#87898c] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
           <p className="text-[#e2e2e2] text-[17px] font-bold tracking-wide max-w-[600px]">
             Tempat berbagi pengetahuan dan memahami dunia lebih baik
@@ -43,12 +42,18 @@ const Register = () => {
               Dengan mendaftar, Anda menunjukkan bahwa Anda menyetujui <span className="text-[#2b69d1] cursor-pointer hover:underline">Persyaratan Layanan</span> Quora.
             </p>
 
-            <div className="w-full space-y-3 flex flex-col items-center">
+            <div className="w-full space-y-3 flex flex-col items-center justify-center my-auto">
               <div className="flex justify-center w-full max-w-[280px]">
-                 <GoogleLogin onSuccess={handleGoogleSuccess} theme="filled_black" shape="rectangular" text="signup_with" width="280px" />
+                 <GoogleLogin 
+                   onSuccess={handleGoogleSuccess} 
+                   theme="filled_black" 
+                   shape="rectangular" 
+                   text="signup_with" 
+                   width="280px" 
+                 />
               </div>
               
-              <p className="text-[#87898c] text-[13px] mt-6">
+              <p className="text-[#87898c] text-[13px] pt-4">
                 Sudah punya akun? <Link to="/login" className="text-[#2b69d1] hover:underline font-bold ml-1">Masuk</Link>
               </p>
             </div>
@@ -81,21 +86,6 @@ const Register = () => {
           </form>
 
         </div>
-
-        {/* FOOTER */}
-        <div className="w-full bg-[#1f1f1f] border-t border-[#333333] py-3.5 px-4 text-center">
-          <div className="flex flex-wrap justify-center gap-x-2 text-[12px] text-[#87898c] font-medium">
-            <span className="hover:underline cursor-pointer">Tentang Kami</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Karier</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Privasi</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Ketentuan</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Kontak</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Bahasa</span><span>·</span>
-            <span className="hover:underline cursor-pointer">Pers</span><span>·</span>
-            <span>© Quora, Inc. 2026</span>
-          </div>
-        </div>
-
       </div>
     </div>
   );
