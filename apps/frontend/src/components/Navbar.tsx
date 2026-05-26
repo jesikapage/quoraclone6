@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
 import { useNavigate, Link } from "react-router-dom";
 import {
   Home, BookOpen, PenLine, Rocket, Bell,
   Search, ChevronDown, Globe,
 } from "lucide-react";
+import { useState } from "react";
 
 const C = {
   bg: "#181919",
@@ -26,7 +26,12 @@ const NAV_ITEMS = [
   { to: "/notifikasi", icon: Bell,     label: "Notifikasi" },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+}
+
+export default function Navbar({ search, onSearchChange }: NavbarProps) {
   const { user: authUser, logout } = useAuthStore();
   const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState("/");
@@ -80,11 +85,14 @@ export default function Navbar() {
           })}
         </nav>
 
+        {/* Search Bar — terhubung ke Beranda */}
         <div style={{ flex: 1, maxWidth: 220, position: "relative", marginLeft: 8 }}>
           <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: C.textSecondary }} />
           <input
             type="search"
-            placeholder="Cari Quora"
+            placeholder="Cari postingan atau pengguna..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
             style={{
               width: "100%", background: C.bg,
               border: `1px solid ${C.border}`,
@@ -116,8 +124,7 @@ export default function Navbar() {
             style={{
               display: "flex", alignItems: "center", gap: 4,
               background: C.red, color: "#fff", border: "none", borderRadius: 3,
-              padding: "6px 12px",
-              fontFamily: FONT,
+              padding: "6px 12px", fontFamily: FONT,
               fontSize: 15, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
             }}
           >

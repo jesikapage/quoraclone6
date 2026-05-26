@@ -3,9 +3,10 @@ import { useAuthStore } from "../stores/auth.store";
 import { Link } from "react-router-dom";
 import {
   ThumbsUp, ThumbsDown, MessageCircle, Repeat2,
-  MoreHorizontal, X, Plus, HelpCircle, PenLine, Send,
+  MoreHorizontal, X, HelpCircle, PenLine, Send,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 type Post = {
   id: string;
@@ -46,8 +47,6 @@ function PostCard({ post }: { post: Post }) {
 
   return (
     <article style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "16px", boxShadow: "0 1px 3px rgba(0,0,0,0.4)", marginBottom: "24px", borderRadius: "4px" }}>
-
-      {/* Author */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <img src={post.user.avatar_url} alt={post.user.name} style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${C.border}`, flexShrink: 0 }} />
@@ -71,22 +70,18 @@ function PostCard({ post }: { post: Post }) {
         </button>
       </div>
 
-      {/* Judul */}
       <h2 style={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: C.textPrimary, lineHeight: 1.3, margin: "8px 0", cursor: "pointer" }}>
         {post.content}
       </h2>
 
-      {/* Body */}
       <p style={{ fontFamily: FONT, fontSize: 15, fontWeight: 400, color: C.textSecondary, lineHeight: 1.6, margin: "8px 0" }}>
         Klik untuk membaca jawaban selengkapnya...
       </p>
 
-      {/* Gambar */}
       {post.image_url && (
         <img src={post.image_url} alt="post" style={{ width: "100%", maxHeight: 256, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
       )}
 
-      {/* Actions */}
       <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
         <div style={{ display: "flex", borderRadius: 100, border: `1px solid ${C.border}`, overflow: "hidden" }}>
           <button
@@ -151,15 +146,6 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
   );
 }
 
-const LEFT_TOPICS = [
-  { label: "Bahasa Inggris", img: "https://images.unsplash.com/photo-1543872084-c7bd3822856f?w=100&q=80" },
-  { label: "Budaya populer", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&q=80" },
-  { label: "Pendidikan",     img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=100&q=80" },
-  { label: "Kesehatan",      img: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=100&q=80" },
-  { label: "Musik",          img: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&q=80" },
-  { label: "Teknologi",      img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=100&q=80" },
-];
-
 const DUMMY_POSTS: Post[] = [
   {
     id: "101",
@@ -177,15 +163,10 @@ const DUMMY_POSTS: Post[] = [
   },
 ];
 
-const FOOTER_LINKS = [
-  "Tentang Quora", "Ketentuan", "Privasi",
-  "Penggunaan Dapat Diterima", "Beriklan",
-  "Karier", "Pers", "Perusahaan",
-];
-
 export default function Beranda() {
   const { user: authUser } = useAuthStore();
   const [posts, setPosts] = useState<Post[]>([]);
+  const [search, setSearch] = useState("");
 
   const user = authUser ?? {
     name: "Prilia",
@@ -196,62 +177,45 @@ export default function Beranda() {
     setPosts(DUMMY_POSTS);
   }, []);
 
+  const filteredPosts = posts.filter((post) =>
+    post.content.toLowerCase().includes(search.toLowerCase()) ||
+    post.user.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, fontSize: 15 }}>
-      <Navbar />
+      <Navbar search={search} onSearchChange={setSearch} />
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "16px", display: "flex", gap: 24 }}>
 
         {/* Sidebar Kiri */}
-        <aside style={{ width: 180, flexShrink: 0 }} className="lg-sidebar">
-          <button
-            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px", borderRadius: 3, border: "none", background: "none", cursor: "pointer", fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textPrimary, textAlign: "left" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
-          >
-            <Plus size={16} color={C.textSecondary} /> Buat Ruang
-          </button>
-
-          <p style={{ fontFamily: FONT, fontSize: 11, color: C.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", padding: "12px 12px 4px" }}>
-            Topik
-          </p>
-
-          {LEFT_TOPICS.map((topic) => {
-            return (
-              <button
-                key={topic.label}
-                style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 12px", borderRadius: 3, border: "none", background: "none", cursor: "pointer", fontFamily: FONT, fontSize: 15, color: C.textPrimary, textAlign: "left" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
-              >
-                <img src={topic.img} alt={topic.label} style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover", flexShrink: 0, border: `1px solid ${C.border}` }} />
-                {topic.label}
-              </button>
-            );
-          })}
-
-          <div style={{ marginTop: 24, padding: "0 12px" }}>
-            <p style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.6, margin: 0, fontFamily: FONT }}>
-              {FOOTER_LINKS.map((l, i) => {
-                return (
-                  <span key={l}>
-                    <a href="#" style={{ color: C.textMuted, textDecoration: "none" }}>{l}</a>
-                    {i < FOOTER_LINKS.length - 1 && <span> · </span>}
-                  </span>
-                );
-              })}
-            </p>
-            <p style={{ fontSize: 11, color: C.textMuted, marginTop: 6, fontFamily: FONT }}>© 2025 Quora</p>
-          </div>
-        </aside>
+        <div className="lg-sidebar">
+          <Sidebar />
+        </div>
 
         {/* Feed Tengah */}
         <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
           <FeedTabs avatarUrl={user.avatarUrl ?? ""} />
+
+          {search && (
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12 }}>
+              Hasil untuk "<strong style={{ color: C.textSecondary }}>{search}</strong>" — {filteredPosts.length} ditemukan
+            </p>
+          )}
+
           <div>
-            {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
+            ) : (
+              <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted }}>
+                <p style={{ fontSize: 15, fontFamily: FONT }}>
+                  Tidak ada postingan untuk "<strong>{search}</strong>"
+                </p>
+                <p style={{ fontSize: 13, fontFamily: FONT, marginTop: 8 }}>Coba kata kunci lain</p>
+              </div>
+            )}
           </div>
         </main>
 
