@@ -6,7 +6,7 @@ import {
   MoreHorizontal, X, HelpCircle, PenLine, Send,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/footbar";
+import Sidebar from "../components/Sidebar";
 
 type Post = {
   id: string;
