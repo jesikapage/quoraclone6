@@ -7,7 +7,10 @@
     "dev": "bun run --watch src/index.ts",
     "build": "prisma generate && tsdown",
     "start": "bun dist/index.mjs",
-    "seed": "bun --bun prisma/seed.ts"
+    "prod:sql": "bunx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > baseline.sql",
+    "prod:check-env": "bun --env-file=.env.production -e \"console.log(process.env.DATABASE_URL)\"",
+    "prod:migrate": "bun --env-file=.env.production prisma/migrate.ts",
+    "prod:seed": "bun --env-file=.env.production prisma/seed.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
