@@ -1,14 +1,23 @@
 import { defineConfig } from "prisma/config";
-import * as dotenv from "dotenv";
 
-dotenv.config();
+const dbUrl = process.env.DATABASE_URL || "file:./dev.db";
+const schema = dbUrl.startsWith("postgre")
+  ? "prisma/schema-postgres.prisma"
+  : "prisma/schema.prisma";
+
+// --- LOG UNTUK DEBUGGING ---
+console.log("==========================================");
+console.log("DATABASE_URL :", process.env.DATABASE_URL);
+console.log("Skema        :", schema);
+console.log("==========================================");
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: schema,
   migrations: {
     path: "prisma/migrations",
+    seed: "bun run prisma/seed.ts",
   },
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: dbUrl,
   },
 });
