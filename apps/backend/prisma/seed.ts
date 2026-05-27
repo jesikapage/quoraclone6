@@ -1,7 +1,7 @@
 import { AuthProvider } from "../src/generated/prisma/client";
 import { prisma } from "./db";
 
-import { hash } from "bcrypt";
+import { hash } from "bcryptjs";
 
 async function main() {
   console.log("🌱 Seeding database...");

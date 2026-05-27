@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^3.0.0",
     "@types/bun": "latest",
     "@types/pg": "^8.20.0",
     "tsdown": "^0.22.0"
@@ -27,6 +28,7 @@
     "@prisma/client": "^7.8.0",
     "backend": ".",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
     "elysia": "^1.4.28",
     "pg": "^8.21.0",

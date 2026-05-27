@@ -1,0 +1,48 @@
+name: Deploy Backend to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/backend/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install and Build Backend
+        env:
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+        run: |
+          cd apps/backend
+          bun install
+          bun run build
+
+      - name: Package to ZIP
+        run: |
+          cd apps/backend
+          zip -r deploy-backend.zip dist/ node_modules/ package.json
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name quora-backend-api \
+            --zip-file fileb://apps/backend/deploy-backend.zip

@@ -23,7 +23,10 @@ jobs:
         cd apps/frontend
         bun install
 
+    # PERBAIKAN: Menyuntikkan variabel lingkungan ke dalam proses kompilasi
     - name: Build Project
+      env:
+        VITE_API_URL: ${{ vars.VITE_API_URL }}
       run: |
         cd apps/frontend
         bun run build

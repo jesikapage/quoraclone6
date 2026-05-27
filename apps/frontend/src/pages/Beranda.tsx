@@ -14,6 +14,10 @@ type Post = {
     name: string;
     avatar_url: string;
   };
+  _count?: {
+    comments: number;
+    post_likes: number;
+  };
 };
 
 const C = {
@@ -40,7 +44,7 @@ function timeAgo(dateStr: string) {
 
 function PostCard({ post }: { post: Post }) {
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(137);
+  const [likeCount, setLikeCount] = useState(post._count?.post_likes || 0);
 
   return (
     <article style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "16px", boxShadow: "0 1px 3px rgba(0,0,0,0.4)", marginBottom: "24px", borderRadius: "4px" }}>
@@ -58,7 +62,7 @@ function PostCard({ post }: { post: Post }) {
               </span>
             </div>
             <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, lineHeight: 1.4, margin: 0 }}>
-              {timeAgo(post.created_at)}
+              {timeAgo(post.created_at || (post as any).createdAt)}
             </p>
           </div>
         </div>
@@ -71,9 +75,21 @@ function PostCard({ post }: { post: Post }) {
         {post.content}
       </h2>
 
-      <p style={{ fontFamily: FONT, fontSize: 15, fontWeight: 400, color: C.textSecondary, lineHeight: 1.6, margin: "8px 0" }}>
+      <Link
+        to={`/komentar/${post.id}`}
+        style={{
+          fontFamily: FONT,
+          fontSize: 15,
+          fontWeight: 400,
+          color: C.blue,
+          lineHeight: 1.6,
+          margin: "8px 0",
+          textDecoration: "none",
+          display: "block"
+        }}
+      >
         Klik untuk membaca jawaban selengkapnya...
-      </p>
+      </Link>
 
       {post.image_url && (
         <img src={post.image_url} alt="post" style={{ width: "100%", maxHeight: 256, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
@@ -96,7 +112,8 @@ function PostCard({ post }: { post: Post }) {
           to={`/komentar/${post.id}`}
           style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, textDecoration: "none" }}
         >
-          <MessageCircle size={14} /> Komentar
+
+          <MessageCircle size={14} /> {post._count && post._count.comments > 0 ? `${post._count.comments} Komentar` : "Komentar"}
         </Link>
 
         <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, background: C.surface, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}>
@@ -111,7 +128,8 @@ function PostCard({ post }: { post: Post }) {
   );
 }
 
-function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
+// PERUBAHAN: Menambahkan props onOpenModal agar klik input memicu state di parent
+function FeedTabs({ avatarUrl, onOpenModal }: { avatarUrl: string, onOpenModal: () => void }) {
   return (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, marginBottom: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
@@ -120,6 +138,7 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
           type="text"
           placeholder="Apa yang ingin Anda tanyakan atau bagikan?"
           readOnly
+          onClick={onOpenModal} // Pemantik klik
           style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: FONT, fontSize: 15, color: C.textMuted, cursor: "pointer" }}
         />
       </div>
@@ -131,6 +150,7 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
         ].map((item, i) => (
           <button
             key={item.label}
+            onClick={onOpenModal} // Pemantik klik untuk tombol bawah juga
             style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderLeft: i > 0 ? `1px solid ${C.border}` : "none", background: C.surface, border: "none", fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surface; }}
@@ -143,36 +163,64 @@ function FeedTabs({ avatarUrl }: { avatarUrl: string }) {
   );
 }
 
-const DUMMY_POSTS: Post[] = [
-  {
-    id: "101",
-    content: "Bagaimana cara mengoptimalkan penggunaan AWS Lambda untuk backend aplikasi skala besar?",
-    image_url: null,
-    created_at: "2026-05-16T12:00:00Z",
-    user: { name: "Rito Backend Developer", avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Rito" },
-  },
-  {
-    id: "102",
-    content: "Desain Quora Clone kita terlihat sangat responsif menggunakan Tailwind CSS!",
-    image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500",
-    created_at: "2026-05-16T14:30:00Z",
-    user: { name: "Prilia UI/UX", avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia" },
-  },
-];
-
 export default function Beranda() {
   const { user: authUser } = useAuthStore();
   const [posts, setPosts] = useState<Post[]>([]);
   const [search, setSearch] = useState("");
 
+  // STATE BARU UNTUK FITUR MODAL POSTINGAN
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const user = authUser ?? {
+    id: "1", // Penahan ID darurat
     name: "Prilia",
     avatarUrl: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia",
   };
 
+  // INTEGRASI API: Mengambil data nyata dari backend
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`);
+      const json = await res.json();
+      if (json.success) setPosts(json.data);
+    } catch (err) {
+      console.error("Gagal mengambil data dari database", err);
+    }
+  };
+
   useEffect(() => {
-    setPosts(DUMMY_POSTS);
+    fetchPosts(); // Gantikan DUMMY_POSTS dengan tarikan data asli
   }, []);
+
+  // INTEGRASI API: Mengirim postingan baru
+  const handleCreatePost = async () => {
+    if (!postContent.trim()) return;
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: user.id,
+          content: postContent
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setPostContent("");
+        setIsModalOpen(false);
+        fetchPosts(); // Perbarui daftar post tanpa perlu refresh halaman
+      }
+    } catch (error) {
+      alert("Gagal memposting.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredPosts = posts.filter((post) =>
     post.content.toLowerCase().includes(search.toLowerCase()) ||
@@ -192,7 +240,7 @@ export default function Beranda() {
 
         {/* Feed Tengah */}
         <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
-          <FeedTabs avatarUrl={user.avatarUrl ?? ""} />
+          <FeedTabs avatarUrl={user.avatarUrl ?? ""} onOpenModal={() => setIsModalOpen(true)} />
 
           {search && (
             <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12 }}>
@@ -208,9 +256,8 @@ export default function Beranda() {
             ) : (
               <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted }}>
                 <p style={{ fontSize: 15, fontFamily: FONT }}>
-                  Tidak ada postingan untuk "<strong>{search}</strong>"
+                  Tidak ada postingan.
                 </p>
-                <p style={{ fontSize: 13, fontFamily: FONT, marginTop: 8 }}>Coba kata kunci lain</p>
               </div>
             )}
           </div>
@@ -223,6 +270,48 @@ export default function Beranda() {
           </div>
         </aside>
       </div>
+
+      {/* RENDER MODAL POP-UP */}
+      {isModalOpen && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.75)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, width: "100%", maxWidth: 600, display: "flex", flexDirection: "column", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}>
+
+            {/* Header Modal */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img src={user.avatarUrl} alt="avatar" style={{ width: 40, height: 40, borderRadius: "50%" }} />
+                <h2 style={{ fontFamily: FONT, color: C.textPrimary, margin: 0, fontSize: 16, fontWeight: 600 }}>{user.name}</h2>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: 4 }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Area Ketik (Textarea) */}
+            <div style={{ padding: 16 }}>
+              <textarea
+                autoFocus
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                placeholder="Apa yang ingin Anda tanyakan atau bagikan?"
+                style={{ width: "100%", minHeight: 180, background: "transparent", border: "none", outline: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 18, resize: "none" }}
+              />
+            </div>
+
+            {/* Footer Modal */}
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: 16, borderTop: `1px solid ${C.border}` }}>
+              <button
+                onClick={handleCreatePost}
+                disabled={isSubmitting || !postContent.trim()}
+                style={{ background: isSubmitting || !postContent.trim() ? C.textMuted : C.blue, color: "#fff", border: "none", padding: "8px 20px", borderRadius: 100, fontFamily: FONT, fontWeight: 600, cursor: isSubmitting || !postContent.trim() ? "not-allowed" : "pointer" }}
+              >
+                {isSubmitting ? "Mengirim..." : "Kirim"}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       <style>{`
         .lg-sidebar { display: none; }
