@@ -23,7 +23,8 @@ jobs:
 
       - name: Install and Build Backend
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Menggunakan URL tiruan murni untuk mengecoh Prisma demi keamanan
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           bun install
@@ -31,7 +32,7 @@ jobs:
 
       - name: Package to ZIP
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           rm -rf node_modules
@@ -41,10 +42,12 @@ jobs:
           # Pisahkan node_modules ke layer
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
-          zip -r lambda-layer.zip lambda-layer/
+
+          # Parameter -ryq digunakan untuk mempertahankan symlink dan mematikan log (mencegah loop tak terbatas)
+          zip -ryq lambda-layer.zip lambda-layer/
 
           # Zip hanya dist (kecil!)
-          zip -r deploy-backend.zip dist/ package.json
+          zip -ryq deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -70,7 +73,7 @@ jobs:
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
 
-          # Tunggu update selesai dulu
+          # Tunggu update selesai dulu agar tidak terjadi tabrakan konfigurasi
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
