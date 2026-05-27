@@ -23,7 +23,7 @@ jobs:
 
       - name: Install and Build Backend
         env:
-          # Menggunakan URL tiruan murni untuk mengecoh Prisma demi keamanan
+          # Injeksi URL tiruan untuk meloloskan validasi Prisma
           DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
@@ -43,10 +43,10 @@ jobs:
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
 
-          # Parameter -ryq digunakan untuk mempertahankan symlink dan mematikan log (mencegah loop tak terbatas)
+          # Compress layer dengan flag -ryq untuk mencegah infinite symlink loop
           zip -ryq lambda-layer.zip lambda-layer/
 
-          # Zip hanya dist (kecil!)
+          # Zip hanya folder dist untuk kode utama
           zip -ryq deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
@@ -56,28 +56,36 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy Layer to AWS Lambda
+      - name: Deploy Layer via S3 to AWS Lambda
         run: |
+          # 1. Transit file raksasa ke S3 untuk menghindari batas 50MB API Terminal
+          aws s3 cp apps/backend/lambda-layer.zip s3://quoraclone6-frontend/backend-layer-temp.zip
+
+          # 2. Tarik file dari S3 ke sistem Lambda Layers
           LAYER_VERSION=$(aws lambda publish-layer-version \
             --layer-name quora-backend-deps \
-            --zip-file fileb://apps/backend/lambda-layer.zip \
+            --content S3Bucket=quoraclone6-frontend,S3Key=backend-layer-temp.zip \
             --compatible-runtimes nodejs20.x \
             --query 'Version' \
             --output text)
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
 
+          # 3. Segera bersihkan file transit dari S3
+          aws s3 rm s3://quoraclone6-frontend/backend-layer-temp.zip
+
       - name: Deploy Code to AWS Lambda
         run: |
+          # Perbarui kode logika bisnis
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
 
-          # Tunggu update selesai dulu agar tidak terjadi tabrakan konfigurasi
+          # Tunggu status Lambda menjadi Ready
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
-          # Attach layer ke Lambda
+          # Tempelkan layer terbaru ke fungsi Lambda
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
