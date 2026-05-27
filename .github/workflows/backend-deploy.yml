@@ -22,6 +22,9 @@ jobs:
           bun-version: latest
 
       - name: Install and Build Backend
+        env:
+        # Prisma hanya butuh string dengan format URL yang valid untuk lolos kompilasi
+        DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           bun install
