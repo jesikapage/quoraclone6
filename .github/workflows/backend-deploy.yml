@@ -38,12 +38,33 @@ jobs:
           npm install --omit=dev
           npx prisma generate
 
+          # Hapus binary Prisma yang tidak dipakai di Lambda
+          find node_modules/.prisma/client -name "*.node" \
+            ! -name "*rhel-openssl*" \
+            ! -name "*linux-musl*" \
+            -delete 2>/dev/null || true
+
+          # Hapus file tidak perlu
+          find node_modules -name "*.md" -delete 2>/dev/null || true
+          find node_modules -name "*.ts" ! -name "*.d.ts" -delete 2>/dev/null || true
+          find node_modules -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
+          find node_modules -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
+          find node_modules -name "*.map" -delete 2>/dev/null || true
+          find node_modules -name "README*" -delete 2>/dev/null || true
+          find node_modules -name "CHANGELOG*" -delete 2>/dev/null || true
+
+          # Cek ukuran sebelum zip
+          echo "Ukuran node_modules: $(du -sh node_modules | cut -f1)"
+
           # Pisahkan node_modules ke layer
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
           zip -r lambda-layer.zip lambda-layer/
-          
-          # Zip hanya dist (kecil!)
+
+          # Cek ukuran zip layer
+          echo "Ukuran lambda-layer.zip: $(du -sh lambda-layer.zip | cut -f1)"
+
+          # Zip hanya dist
           zip -r deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
@@ -61,7 +82,7 @@ jobs:
             --compatible-runtimes nodejs20.x \
             --query 'Version' \
             --output text)
-          
+
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
 
       - name: Deploy Code to AWS Lambda
@@ -69,12 +90,10 @@ jobs:
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
-          
-          # Tunggu update selesai dulu
+
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
-          # Attach layer ke Lambda
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
