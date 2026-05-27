@@ -22,40 +22,121 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install and Build Backend
+      # ─── TAHAP 1: BUILD ───────────────────────────────────────────────────
+      # Gunakan Bun untuk generate Prisma client & kompilasi TypeScript
+      - name: Build Backend (Bun)
         env:
-          # URL tiruan untuk mengecoh mesin Prisma saat kompilasi
           DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           bun install
           bun run build
 
-      - name: Package to ZIP
+      # ─── TAHAP 2: INSTALL PROD DEPS (NPM) ────────────────────────────────
+      # Pisah install dari Bun karena kita butuh node_modules kompatibel nodejs20.x
+      - name: Install Production Dependencies (npm)
         env:
           DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
-          # 1. Reset dependensi ke NPM agar konsisten
+
+          # Hapus node_modules Bun, ganti dengan npm --omit=dev
           rm -rf node_modules
-          npm install --omit=dev
-          npx prisma generate
 
-          # 2. Pemangkasan Ekstrem Biner Prisma (Bypass 250MB AWS Limit)
-          rm -rf node_modules/prisma
-          rm -rf node_modules/@prisma/engines
-          rm -rf node_modules/.cache
+          # Hapus sementara self-reference "backend": "." agar tidak terbawa
+          # npm install akan skip devDependencies otomatis dengan --omit=dev
+          npm install --omit=dev --ignore-scripts
 
-          # 3. Pisahkan node_modules yang sudah dipangkas ke struktur Layer AWS
+          # Generate Prisma client setelah install (butuh scripts dijalankan manual)
+          npx prisma generate --schema=prisma/schema-postgres.prisma
+
+      # ─── TAHAP 3: AGRESSIVE PRUNING ──────────────────────────────────────
+      # Target: unzipped layer < 250MB (AWS hard limit)
+      - name: Prune node_modules (Target < 200MB unzipped)
+        run: |
+          cd apps/backend/node_modules
+
+          # [A] Hapus self-reference circular (148MB di lokal, jadi ~0 di CI karena --ignore-scripts)
+          rm -rf backend
+
+          # [B] Hapus Prisma CLI & engines biner — tidak dibutuhkan saat runtime Lambda
+          # Lambda hanya perlu @prisma/client/runtime/client.js (JS murni, bukan biner)
+          rm -rf prisma
+          rm -rf @prisma/engines
+
+          # [C] Hapus WASM compiler untuk database yang tidak dipakai
+          # Hanya pakai PostgreSQL — hapus mysql, sqlite, sqlserver, cockroachdb
+          cd @prisma/client/runtime
+          rm -f query_compiler_fast_bg.mysql.*
+          rm -f query_compiler_fast_bg.sqlite.*
+          rm -f query_compiler_fast_bg.sqlserver.*
+          rm -f query_compiler_fast_bg.cockroachdb.*
+          rm -f query_compiler_small_bg.mysql.*
+          rm -f query_compiler_small_bg.sqlite.*
+          rm -f query_compiler_small_bg.sqlserver.*
+          rm -f query_compiler_small_bg.cockroachdb.*
+          cd ../../..
+
+          # [D] Hapus generator-build (hanya untuk prisma generate, tidak dibutuhkan runtime)
+          rm -rf @prisma/client/generator-build
+
+          # [E] Hapus @electric-sql/pglite — driver lokal, tidak dibutuhkan karena pakai adapter-pg
+          rm -rf @electric-sql
+
+          # [F] Hapus build tools yang ikut sebagai transitif dependency
+          rm -rf @rolldown
+          rm -rf tsdown
+          rm -rf rollup
+          rm -rf esbuild
+
+          # [G] Hapus type definitions (tidak dibutuhkan runtime)
+          find . -name "*.d.ts" -not -path "*/prisma/*" -delete
+          find . -name "*.d.mts" -not -path "*/prisma/*" -delete
+
+          # [H] Hapus source maps
+          find . -name "*.js.map" -delete
+          find . -name "*.mjs.map" -delete
+
+          # [I] Hapus test/docs/example folders
+          find . -maxdepth 3 -type d \( -name "test" -o -name "tests" -o -name "__tests__" -o -name "docs" -o -name "examples" -o -name "example" \) -exec rm -rf {} + 2>/dev/null || true
+
+          # Laporan ukuran akhir
+          cd ..
+          echo "=== Ukuran node_modules setelah pruning ==="
+          du -sh node_modules/
+          echo "=== Top 10 package terbesar ==="
+          du -sh node_modules/*/ 2>/dev/null | sort -rh | head -10
+
+      # ─── TAHAP 4: PACKAGE ────────────────────────────────────────────────
+      - name: Package ZIP Files
+        run: |
+          cd apps/backend
+
+          # Layer: node_modules dalam struktur folder nodejs/ (standar AWS Lambda Layer)
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
 
-          # 4. Kompresi diam (-q) dengan retensi symlink (-y) untuk mencegah infinite loop
+          echo "=== Ukuran lambda-layer/ sebelum zip ==="
+          du -sh lambda-layer/
+
+          # ZIP layer dengan symlink preservation (-y) tanpa verbose (-q)
           zip -ryq lambda-layer.zip lambda-layer/
 
-          # 5. Kompresi kode logika utama (dist)
-          zip -ryq deploy-backend.zip dist/ package.json
+          echo "=== Ukuran lambda-layer.zip ==="
+          du -sh lambda-layer.zip
 
+          # Periksa apakah ukuran unzipped melebihi 250MB (262144000 bytes)
+          UNZIP_SIZE=$(unzip -l lambda-layer.zip | tail -1 | awk '{print $1}')
+          echo "Estimasi unzipped size: $UNZIP_SIZE bytes"
+          if [ "$UNZIP_SIZE" -gt 262144000 ]; then
+            echo "ERROR: Ukuran unzipped ($UNZIP_SIZE bytes) melebihi limit AWS 250MB!"
+            exit 1
+          fi
+
+          # Code ZIP: dist/ + package.json + generated prisma client
+          zip -ryq deploy-backend.zip dist/ package.json src/generated/
+
+      # ─── TAHAP 5: AWS CREDENTIALS ─────────────────────────────────────────
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -63,12 +144,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      # ─── TAHAP 6: DEPLOY LAYER ────────────────────────────────────────────
       - name: Deploy Layer via S3 to AWS Lambda
         run: |
-          # A. Transit file ZIP ke S3 (Bypass 50MB Terminal Upload Limit)
+          # Upload ke S3 (bypass 50MB CLI upload limit)
           aws s3 cp apps/backend/lambda-layer.zip s3://quoraclone6-frontend/backend-layer-temp.zip
 
-          # B. Instruksikan AWS Lambda mengambil Layer dari jaringan internal S3
+          # Publish layer dari S3
           LAYER_VERSION=$(aws lambda publish-layer-version \
             --layer-name quora-backend-deps \
             --content S3Bucket=quoraclone6-frontend,S3Key=backend-layer-temp.zip \
@@ -77,22 +159,26 @@ jobs:
             --output text)
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
+          echo "Layer version published: $LAYER_VERSION"
 
-          # C. Pembersihan otomatis file transit di S3
+          # Hapus file transit di S3
           aws s3 rm s3://quoraclone6-frontend/backend-layer-temp.zip
 
+      # ─── TAHAP 7: DEPLOY CODE ─────────────────────────────────────────────
       - name: Deploy Code to AWS Lambda
         run: |
-          # X. Perbarui logika kode
+          # Upload kode logika (dist/ saja, node_modules ada di Layer)
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
 
-          # Y. Jeda proses hingga AWS selesai memuat kode baru
+          # Tunggu hingga Lambda selesai memuat kode baru
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
-          # Z. Tempelkan Layer pustaka terbaru ke fungsi Lambda
+          # Pasang Layer terbaru ke fungsi Lambda
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
+
+          echo "Deploy selesai! Layer v${{ env.LAYER_VERSION }} terpasang."
