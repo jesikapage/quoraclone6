@@ -23,7 +23,8 @@ jobs:
 
       - name: Install and Build Backend
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # URL tiruan untuk mengecoh mesin Prisma saat kompilasi
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           bun install
@@ -31,41 +32,28 @@ jobs:
 
       - name: Package to ZIP
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
+          # 1. Reset dependensi ke NPM agar konsisten
           rm -rf node_modules
           npm install --omit=dev
           npx prisma generate
 
-          # Hapus binary Prisma yang tidak dipakai di Lambda
-          find node_modules/.prisma/client -name "*.node" \
-            ! -name "*rhel-openssl*" \
-            ! -name "*linux-musl*" \
-            -delete 2>/dev/null || true
+          # 2. Pemangkasan Ekstrem Biner Prisma (Bypass 250MB AWS Limit)
+          rm -rf node_modules/prisma
+          rm -rf node_modules/@prisma/engines
+          rm -rf node_modules/.cache
 
-          # Hapus file tidak perlu
-          find node_modules -name "*.md" -delete 2>/dev/null || true
-          find node_modules -name "*.ts" ! -name "*.d.ts" -delete 2>/dev/null || true
-          find node_modules -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
-          find node_modules -name "tests" -type d -exec rm -rf {} + 2>/dev/null || true
-          find node_modules -name "*.map" -delete 2>/dev/null || true
-          find node_modules -name "README*" -delete 2>/dev/null || true
-          find node_modules -name "CHANGELOG*" -delete 2>/dev/null || true
-
-          # Cek ukuran sebelum zip
-          echo "Ukuran node_modules: $(du -sh node_modules | cut -f1)"
-
-          # Pisahkan node_modules ke layer
+          # 3. Pisahkan node_modules yang sudah dipangkas ke struktur Layer AWS
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
-          zip -r lambda-layer.zip lambda-layer/
 
-          # Cek ukuran zip layer
-          echo "Ukuran lambda-layer.zip: $(du -sh lambda-layer.zip | cut -f1)"
+          # 4. Kompresi diam (-q) dengan retensi symlink (-y) untuk mencegah infinite loop
+          zip -ryq lambda-layer.zip lambda-layer/
 
-          # Zip hanya dist
-          zip -r deploy-backend.zip dist/ package.json
+          # 5. Kompresi kode logika utama (dist)
+          zip -ryq deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -74,26 +62,36 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy Layer to AWS Lambda
+      - name: Deploy Layer via S3 to AWS Lambda
         run: |
+          # A. Transit file ZIP ke S3 (Bypass 50MB Terminal Upload Limit)
+          aws s3 cp apps/backend/lambda-layer.zip s3://quoraclone6-frontend/backend-layer-temp.zip
+
+          # B. Instruksikan AWS Lambda mengambil Layer dari jaringan internal S3
           LAYER_VERSION=$(aws lambda publish-layer-version \
             --layer-name quora-backend-deps \
-            --zip-file fileb://apps/backend/lambda-layer.zip \
+            --content S3Bucket=quoraclone6-frontend,S3Key=backend-layer-temp.zip \
             --compatible-runtimes nodejs20.x \
             --query 'Version' \
             --output text)
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
 
+          # C. Pembersihan otomatis file transit di S3
+          aws s3 rm s3://quoraclone6-frontend/backend-layer-temp.zip
+
       - name: Deploy Code to AWS Lambda
         run: |
+          # X. Perbarui logika kode
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
 
+          # Y. Jeda proses hingga AWS selesai memuat kode baru
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
+          # Z. Tempelkan Layer pustaka terbaru ke fungsi Lambda
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
