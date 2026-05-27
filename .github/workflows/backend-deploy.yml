@@ -128,7 +128,7 @@ jobs:
           LAYER_VERSION=$(aws lambda publish-layer-version \
             --layer-name quora-backend-deps \
             --content S3Bucket=quoraclone6-frontend,S3Key=backend-layer-temp.zip \
-            --compatible-runtimes nodejs20.x \
+            --compatible-runtimes nodejs24.x \
             --query 'Version' \
             --output text)
 
