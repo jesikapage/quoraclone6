@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 import { commentRoutes } from "./routes/comment.routes";
 import { postRoutes } from "./routes/post.routes";
 import { authRoutes } from "./routes/auth.routes";
+import { googleAuthRoutes } from "./routes/google.routes";
 
 dotenv.config();
 
@@ -11,60 +12,29 @@ const app = new Elysia()
 
   .use(
     cors({
-      origin: "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com",
+      origin: ({ request }) => {
+        const allowedOrigins = [
+          "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com",
+          "http://localhost:5173",
+          "http://localhost:3000",
+        ];
+        const origin = request.headers.get("origin") ?? "";
+        return allowedOrigins.includes(origin) ? origin : "";
+      },
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "Accept"],
       credentials: false,
     })
   )
-  
+
   .get("/", () => ({ message: "API is running alias berjalan 🚀 via Lambda Function URL" }))
-
-
-  .post("/auth/google", async ({ body, set }) => {
-    const { token } = body;
-
-    try {
-      const googleRes = await globalThis.fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
-
-      if (!googleRes.ok) {
-        set.status = 401;
-        return { success: false, message: "Token Google tidak valid atau kedaluwarsa" };
-      }
-
-      const googleUser = (await googleRes.json()) as any;
-
-      // Simulasi token session untuk sementara sebelum kita masuk ke database Prisma
-      const dummySessionToken = "session_mock_" + Math.random().toString(36).substr(2, 9);
-
-      return {
-        success: true,
-        message: "Login Google Berhasil!",
-        token: dummySessionToken,
-        user: {
-          id: googleUser.sub,
-          name: googleUser.name,
-          email: googleUser.email,
-          avatarUrl: googleUser.picture
-        }
-      };
-
-    } catch (error) {
-      set.status = 500;
-      return { success: false, error: "INTERNAL_SERVER_ERROR", message: String(error) };
-    }
-  }, {
-    body: t.Object({
-      token: t.String()
-    })
-  })
 
   .get("/users", ({ query, set }) => {
     const secretKey = query.key;
     const VALID_KEY = "asdos-ppwl-rahasia-2026";
 
     if (!secretKey || secretKey !== VALID_KEY) {
-      set.status = 403; // Forbidden
+      set.status = 403;
       return {
         success: false,
         error: "FORBIDDEN",
@@ -79,6 +49,7 @@ const app = new Elysia()
     ];
   })
 
+  .use(googleAuthRoutes)
   .use(authRoutes)
   .use(postRoutes)
   .use(commentRoutes)
@@ -112,5 +83,3 @@ export default {
 };
 
 export type App = typeof app;
-
-// Baris ini ditambahkan untuk memancing robot CI/CD backend menyala
