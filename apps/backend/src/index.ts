@@ -77,9 +77,7 @@ console.log(`Backend lokal berjalan di http://localhost:3000`);
 
 export default {
   port: process.env.PORT || 3000,
-  fetch(request: Request, env: any) {
-    return app.fetch(request);
-  },
-};
+  fetch: app.fetch,
+}
 
 export type App = typeof app;
