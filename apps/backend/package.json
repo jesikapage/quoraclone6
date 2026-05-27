@@ -1,0 +1,35 @@
+{
+  "name": "backend",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "prisma generate && tsdown",
+    "start": "bun dist/index.mjs",
+    "prod:sql": "bunx prisma migrate diff --from-empty --to-schema prisma/schema.prisma --script > baseline.sql",
+    "prod:check-env": "bun --env-file=.env.production -e \"console.log(process.env.DATABASE_URL)\"",
+    "prod:migrate": "bun --env-file=.env.production prisma/migrate.ts",
+    "prod:seed": "bun --env-file=.env.production prisma/seed.ts"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/bun": "latest",
+    "@types/pg": "^8.20.0",
+    "tsdown": "^0.22.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.4.2",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "backend": ".",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "elysia": "^1.4.28",
+    "pg": "^8.21.0",
+    "prisma": "^7.8.0"
+  }
+}
