@@ -20,7 +20,7 @@ const Login = () => {
     
     try {
       // Menembak endpoint backend Elysia lokal Anda
-      const response = await fetch('https://gcexswmhbjkuev2k2qtaqjqmsa0ugdud.lambda-url.us-east-1.on.aws/auth/google', {
+      const response = await fetch('https://6quolejyqex7a74zdcak2hiima0ynksn.lambda-url.us-east-1.on.aws/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: idToken })
