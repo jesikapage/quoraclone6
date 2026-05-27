@@ -71,7 +71,17 @@ const app = new Elysia()
     return { success: false, error: "INTERNAL_SERVER_ERROR" };
   });
 
-// Ekspor standar untuk AWS Lambda (Bun Custom Runtime)
+// Deteksi Environment: Cegah timeout di AWS Lambda, tapi izinkan jalan di lokal
+if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  app.listen(3000);
+  console.log(`Backend lokal berjalan di http://localhost:3000`);
+}
+
+// EKSPOR KRITIS: Menjawab Masalah Handler Name Mismatch
+// Ini akan dibaca oleh YAML CI/CD Anda yang mencari "dist/index.handler"
+export const handler = app.fetch;
+
+// Ekspor default standar Elysia
 export default {
   fetch: app.fetch,
 };
