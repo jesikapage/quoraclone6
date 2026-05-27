@@ -23,7 +23,7 @@ jobs:
 
       - name: Install and Build Backend
         env:
-          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd apps/backend
           bun install
@@ -31,20 +31,20 @@ jobs:
 
       - name: Package to ZIP
         env:
-          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           cd apps/backend
-          # 1. Hapus node_modules versi Bun yang menyebabkan pembengkakan memori
           rm -rf node_modules
-
-          # 2. Unduh ulang pustaka murni produksi menggunakan NPM (tanpa devDependencies)
           npm install --omit=dev
-
-          # 3. Bangun ulang mesin Prisma agar selaras dengan node_modules NPM
           npx prisma generate
 
-          # 4. Kompresi bersih
-          zip -r deploy-backend.zip dist/ node_modules/ package.json
+          # Pisahkan node_modules ke layer
+          mkdir -p lambda-layer/nodejs
+          cp -r node_modules lambda-layer/nodejs/
+          zip -r lambda-layer.zip lambda-layer/
+          
+          # Zip hanya dist (kecil!)
+          zip -r deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -53,8 +53,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Deploy to AWS Lambda
+      - name: Deploy Layer to AWS Lambda
+        run: |
+          LAYER_VERSION=$(aws lambda publish-layer-version \
+            --layer-name quora-backend-deps \
+            --zip-file fileb://apps/backend/lambda-layer.zip \
+            --compatible-runtimes nodejs20.x \
+            --query 'Version' \
+            --output text)
+          
+          echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
+
+      - name: Deploy Code to AWS Lambda
         run: |
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
+          
+          # Tunggu update selesai dulu
+          aws lambda wait function-updated \
+            --function-name quora-backend-api
+
+          # Attach layer ke Lambda
+          aws lambda update-function-configuration \
+            --function-name quora-backend-api \
+            --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
