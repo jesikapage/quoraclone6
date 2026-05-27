@@ -11,30 +11,42 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // =========================================================================
+  // LOGIKA LOGIN GOOGLE: Terhubung Langsung ke Backend Bun + Elysia
+  // =========================================================================
   const handleGoogleSuccess = async (credentialResponse: any) => {
-    console.log("Google Credential Token:", credentialResponse.credential);
+    const idToken = credentialResponse.credential;
+    console.log("Google Credential Token:", idToken);
     
-    const dummyGoogleUser = {
-      id: "99",
-      name: "Jesika Google User",
-      email: "jesika.oauth@gmail.com",
-      avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=Google"
-    };
-
-    setAuth(dummyGoogleUser, credentialResponse.credential || "dummy-jwt-oauth-token");
-    
-    // TEPAT DI SINI: Kita lempar ke beranda bawa paket data rahasia buat Sonner
-    navigate('/', { state: { fromLogin: true } }); 
+    try {
+      // Menembak endpoint backend Elysia lokal Anda
+      const response = await fetch('http://localhost:3000/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: idToken })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Menyimpan data user asli dan token asli dari backend ke Zustand Store
+        setAuth(data.user, data.token); 
+        
+        // Alihkan halaman ke beranda bawa paket data buat Sonner
+        navigate('/', { state: { fromLogin: true } }); 
+      } else {
+        console.error("Login gagal:", data.message);
+      }
+    } catch (error) {
+      console.error('Terjadi kesalahan koneksi ke backend:', error);
+    }
   };
 
   const handleManualLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      // ALERT DIHAPUS: Sebagai gantinya, form tidak akan tersubmit jika kosong karena diredam otomatis, 
-      // atau kamu bisa biarkan HTML HTML5 handling validasinya nanti.
-      return;
-    }
+    if (!email || !password) return;
 
+    // Login manual sementara tetap menggunakan dummy sampai backend siap
     const dummyManualUser = {
       id: "1",
       name: "Jesika Manager",
@@ -43,7 +55,6 @@ const Login = () => {
     };
 
     setAuth(dummyManualUser, "dummy-jwt-token-from-manual-login");
-    // ALERT DIHAPUS: Langsung masuk ke beranda tanpa interupsi pop-up kotak abu-abu
     navigate('/');
   };
 

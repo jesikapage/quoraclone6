@@ -18,19 +18,20 @@ const app = new Elysia()
         return { success: false, message: "Token Google tidak valid atau kedaluwarsa" };
       }
 
-      const googleUser = (await googleRes.json()) as {
-        name: string;
-        email: string;
-        picture: string;
-      };
+      const googleUser = (await googleRes.json()) as any;
+      
+      // Simulasi token session untuk sementara sebelum kita masuk ke database Prisma
+      const dummySessionToken = "session_mock_" + Math.random().toString(36).substr(2, 9);
 
       return {
         success: true,
         message: "Login Google Berhasil!",
+        token: dummySessionToken, 
         user: {
+          id: googleUser.sub,
           name: googleUser.name,
           email: googleUser.email,
-          picture: googleUser.picture
+          avatarUrl: googleUser.picture
         }
       };
 

@@ -19,7 +19,7 @@ const C = {
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', Ubuntu, Cantarell, 'Helvetica Neue', Oxygen-Sans, sans-serif";
 
 const NAV_ITEMS = [
-  { to: "/",           icon: Home,     label: "Beranda" },
+  { to: "/",         icon: Home,      label: "Beranda" },
   { to: "/mengikuti",  icon: BookOpen, label: "Mengikuti" },
   { to: "/jawab",      icon: PenLine,  label: "Jawab" },
   { to: "/ruang",      icon: Rocket,   label: "Ruang" },
@@ -32,10 +32,12 @@ interface NavbarProps {
 }
 
 export default function Navbar({ search, onSearchChange }: NavbarProps) {
+  // Ambil state user asli dari Zustand
   const { user: authUser, logout } = useAuthStore();
   const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState("/");
 
+  // MENGGUNAKAN USER ASLI: Jika authUser ada, gunakan data asli. Jika null, baru pakai Prilia (untuk fallback jika belum login)
   const user = authUser ?? {
     name: "Prilia",
     avatarUrl: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia",
@@ -104,11 +106,16 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
+          {/* FOTO PROFIL: Otomatis membaca properti avatarUrl dari backend/Zustand */}
           <img
             src={user.avatarUrl ?? ""}
             alt="avatar"
             style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${C.border}`, cursor: "pointer" }}
           />
+          <span style={{ fontFamily: FONT, fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>
+            {user.name}
+          </span>
+          
           <Globe size={20} style={{ color: C.textSecondary, cursor: "pointer" }} />
           <button
             onClick={handleLogout}
