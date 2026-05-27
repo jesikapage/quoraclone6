@@ -112,3 +112,5 @@ export default {
 };
 
 export type App = typeof app;
+
+// Baris ini ditambahkan untuk memancing robot CI/CD backend menyala
