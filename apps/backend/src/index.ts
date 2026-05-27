@@ -9,8 +9,17 @@ const app = new Elysia()
   .use(cors())
   .get("/", () => ({ message: "API is running alias berjalan 🚀 via Lambda Function URL" }))
 
+  .options("/auth/google", ({ set }) => {
+    set.headers["Access-Control-Allow-Origin"] = "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com";
+    set.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
+    set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
+    return "";
+  })
+
   .post("/auth/google", async ({ body, set }) => {
     const { token } = body;
+
+    set.headers["Access-Control-Allow-Origin"] = "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com";
 
     try {
       const googleRes = await globalThis.fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
