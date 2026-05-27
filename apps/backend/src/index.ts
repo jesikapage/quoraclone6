@@ -11,9 +11,10 @@ const app = new Elysia()
 
   .use(
     cors({
-      origin: "*", // Mengizinkan semua domain (Termasuk S3 kamu) tembus tanpa drama
+      origin: "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com",
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+      credentials: false,
     })
   )
   
