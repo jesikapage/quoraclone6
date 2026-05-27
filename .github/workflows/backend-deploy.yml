@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      # Robot ini hanya akan menyala jika ada perubahan kode di folder backend
       - "apps/backend/**"
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -23,8 +23,7 @@ jobs:
 
       - name: Install and Build Backend
         env:
-        # Prisma hanya butuh string dengan format URL yang valid untuk lolos kompilasi
-        DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
           bun install
@@ -33,7 +32,6 @@ jobs:
       - name: Package to ZIP
         run: |
           cd apps/backend
-          # Membungkus kode hasil kompilasi dan dependensi ke dalam satu file ZIP
           zip -r deploy-backend.zip dist/ node_modules/ package.json
 
       - name: Configure AWS Credentials
@@ -45,7 +43,6 @@ jobs:
 
       - name: Deploy to AWS Lambda
         run: |
-          # GANTI "NAMA_FUNGSI_LAMBDA_ANDA" dengan nama fungsi AWS Lambda yang sebenarnya
           aws lambda update-function-code \
-            --function-name NAMA_FUNGSI_LAMBDA_ANDA \
+            --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
