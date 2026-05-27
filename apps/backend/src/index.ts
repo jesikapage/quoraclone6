@@ -1,10 +1,12 @@
 import { Elysia, t } from "elysia";
+import { cors } from "@elysiajs/cors";
 import * as dotenv from "dotenv";
 import { commentRoutes } from "./routes/comment.routes";
 
 dotenv.config();
 
 const app = new Elysia()
+  .use(cors())
   .get("/", () => ({ message: "API is running alias berjalan 🚀 via Lambda Function URL" }))
 
   .post("/auth/google", async ({ body, set }) => {
