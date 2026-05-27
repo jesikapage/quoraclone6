@@ -23,7 +23,7 @@ jobs:
 
       - name: Install and Build Backend
         env:
-          # Injeksi URL tiruan untuk meloloskan validasi Prisma
+          # URL tiruan untuk mengecoh mesin Prisma saat kompilasi
           DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
@@ -35,18 +35,24 @@ jobs:
           DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
+          # 1. Reset dependensi ke NPM agar konsisten
           rm -rf node_modules
           npm install --omit=dev
           npx prisma generate
 
-          # Pisahkan node_modules ke layer
+          # 2. Pemangkasan Ekstrem Biner Prisma (Bypass 250MB AWS Limit)
+          rm -rf node_modules/prisma
+          rm -rf node_modules/@prisma/engines
+          rm -rf node_modules/.cache
+
+          # 3. Pisahkan node_modules yang sudah dipangkas ke struktur Layer AWS
           mkdir -p lambda-layer/nodejs
           cp -r node_modules lambda-layer/nodejs/
 
-          # Compress layer dengan flag -ryq untuk mencegah infinite symlink loop
+          # 4. Kompresi diam (-q) dengan retensi symlink (-y) untuk mencegah infinite loop
           zip -ryq lambda-layer.zip lambda-layer/
 
-          # Zip hanya folder dist untuk kode utama
+          # 5. Kompresi kode logika utama (dist)
           zip -ryq deploy-backend.zip dist/ package.json
 
       - name: Configure AWS Credentials
@@ -58,10 +64,10 @@ jobs:
 
       - name: Deploy Layer via S3 to AWS Lambda
         run: |
-          # 1. Transit file raksasa ke S3 untuk menghindari batas 50MB API Terminal
+          # A. Transit file ZIP ke S3 (Bypass 50MB Terminal Upload Limit)
           aws s3 cp apps/backend/lambda-layer.zip s3://quoraclone6-frontend/backend-layer-temp.zip
 
-          # 2. Tarik file dari S3 ke sistem Lambda Layers
+          # B. Instruksikan AWS Lambda mengambil Layer dari jaringan internal S3
           LAYER_VERSION=$(aws lambda publish-layer-version \
             --layer-name quora-backend-deps \
             --content S3Bucket=quoraclone6-frontend,S3Key=backend-layer-temp.zip \
@@ -71,21 +77,21 @@ jobs:
 
           echo "LAYER_VERSION=$LAYER_VERSION" >> $GITHUB_ENV
 
-          # 3. Segera bersihkan file transit dari S3
+          # C. Pembersihan otomatis file transit di S3
           aws s3 rm s3://quoraclone6-frontend/backend-layer-temp.zip
 
       - name: Deploy Code to AWS Lambda
         run: |
-          # Perbarui kode logika bisnis
+          # X. Perbarui logika kode
           aws lambda update-function-code \
             --function-name quora-backend-api \
             --zip-file fileb://apps/backend/deploy-backend.zip
 
-          # Tunggu status Lambda menjadi Ready
+          # Y. Jeda proses hingga AWS selesai memuat kode baru
           aws lambda wait function-updated \
             --function-name quora-backend-api
 
-          # Tempelkan layer terbaru ke fungsi Lambda
+          # Z. Tempelkan Layer pustaka terbaru ke fungsi Lambda
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
