@@ -19,7 +19,6 @@ const Login = () => {
     console.log("Google Credential Token:", idToken);
     
     try {
-      // Menembak endpoint backend Elysia lokal Anda
       const response = await fetch('https://6quolejyqex7a74zdcak2hiima0ynksn.lambda-url.us-east-1.on.aws/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

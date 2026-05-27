@@ -8,4 +8,13 @@ export default defineConfig({
     tailwindcss(),
   ],
   base: '/',
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: `assets/[name]-baru-[hash].js`,
+        chunkFileNames: `assets/[name]-baru-[hash].js`,
+        assetFileNames: `assets/[name]-baru-[hash].[ext]`
+      }
+    }
+  }
 })

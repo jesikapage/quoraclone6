@@ -6,20 +6,20 @@ import { commentRoutes } from "./routes/comment.routes";
 dotenv.config();
 
 const app = new Elysia()
-  .use(cors())
+
+  .use(
+    cors({
+      origin: "*", // Mengizinkan semua domain (Termasuk S3 kamu) tembus tanpa drama
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    })
+  )
+  
   .get("/", () => ({ message: "API is running alias berjalan 🚀 via Lambda Function URL" }))
 
-  .options("/auth/google", ({ set }) => {
-    set.headers["Access-Control-Allow-Origin"] = "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com";
-    set.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS";
-    set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
-    return "";
-  })
 
   .post("/auth/google", async ({ body, set }) => {
     const { token } = body;
-
-    set.headers["Access-Control-Allow-Origin"] = "http://quoraclone6-frontend.s3-website-us-east-1.amazonaws.com";
 
     try {
       const googleRes = await globalThis.fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
@@ -31,7 +31,6 @@ const app = new Elysia()
 
       const googleUser = (await googleRes.json()) as any;
       
-      // Simulasi token session untuk sementara sebelum kita masuk ke database Prisma
       const dummySessionToken = "session_mock_" + Math.random().toString(36).substr(2, 9);
 
       return {
@@ -61,7 +60,7 @@ const app = new Elysia()
     const VALID_KEY = "asdos-ppwl-rahasia-2026"; 
 
     if (!secretKey || secretKey !== VALID_KEY) {
-      set.status = 403; // Forbidden
+      set.status = 403;
       return { 
         success: false, 
         error: "FORBIDDEN", 
@@ -96,12 +95,11 @@ const app = new Elysia()
     return { success: false, error: "INTERNAL_SERVER_ERROR" };
   });
 
-export const fetch = async (request: Request) => {
-  return await app.handle(request);
-};
-
 export default {
-  fetch
+  port: process.env.PORT || 3000,
+  fetch(request: Request, env: any) {
+    return app.fetch(request);
+  },
 };
 
 export type App = typeof app;
