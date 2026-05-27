@@ -1,0 +1,48 @@
+name: Deploy Backend to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Robot ini hanya akan menyala jika ada perubahan kode di folder backend
+      - "apps/backend/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install and Build Backend
+        run: |
+          cd apps/backend
+          bun install
+          bun run build
+
+      - name: Package to ZIP
+        run: |
+          cd apps/backend
+          # Membungkus kode hasil kompilasi dan dependensi ke dalam satu file ZIP
+          zip -r deploy-backend.zip dist/ node_modules/ package.json
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to AWS Lambda
+        run: |
+          # GANTI "NAMA_FUNGSI_LAMBDA_ANDA" dengan nama fungsi AWS Lambda yang sebenarnya
+          aws lambda update-function-code \
+            --function-name NAMA_FUNGSI_LAMBDA_ANDA \
+            --zip-file fileb://apps/backend/deploy-backend.zip
