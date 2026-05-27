@@ -29,7 +29,7 @@ jobs:
         run: |
           cd apps/backend
           bun install
-          bun run build
+          bun build src/index.ts --outfile=dist/index.js --target=bun
 
       # ─── TAHAP 2: INSTALL PROD DEPS (NPM) ────────────────────────────────
       - name: Install Production Dependencies (npm)
@@ -149,5 +149,5 @@ jobs:
           # KOREKSI KRITIS: Penambahan parameter --handler dist/index.handler
           aws lambda update-function-configuration \
             --function-name quora-backend-api \
-            --handler dist/index.handler \
+            --handler dist/index.fetch \
             --layers arn:aws:lambda:us-east-1:${{ secrets.AWS_ACCOUNT_ID }}:layer:quora-backend-deps:${{ env.LAYER_VERSION }}
