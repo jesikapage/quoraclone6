@@ -30,8 +30,20 @@ jobs:
           bun run build
 
       - name: Package to ZIP
+        env:
+          DATABASE_URL: "postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
         run: |
           cd apps/backend
+          # 1. Hapus node_modules versi Bun yang menyebabkan pembengkakan memori
+          rm -rf node_modules
+
+          # 2. Unduh ulang pustaka murni produksi menggunakan NPM (tanpa devDependencies)
+          npm install --omit=dev
+
+          # 3. Bangun ulang mesin Prisma agar selaras dengan node_modules NPM
+          npx prisma generate
+
+          # 4. Kompresi bersih
           zip -r deploy-backend.zip dist/ node_modules/ package.json
 
       - name: Configure AWS Credentials
