@@ -9,7 +9,6 @@ import { googleAuthRoutes } from "./routes/google.routes";
 dotenv.config();
 
 const app = new Elysia()
-
   .use(
     cors({
       origin: ({ request }) => {
@@ -70,14 +69,11 @@ const app = new Elysia()
     console.error("[ERROR]", error);
     set.status = 500;
     return { success: false, error: "INTERNAL_SERVER_ERROR" };
-  })
-  .listen(3000);
+  });
 
-console.log(`Backend lokal berjalan di http://localhost:3000`);
-
+// Ekspor standar untuk AWS Lambda (Bun Custom Runtime)
 export default {
-  port: process.env.PORT || 3000,
   fetch: app.fetch,
-}
+};
 
 export type App = typeof app;
