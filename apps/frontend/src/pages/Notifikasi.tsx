@@ -1,12 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { MoreHorizontal } from "lucide-react"; // Pastikan lucide-react terpasang
+import { MoreHorizontal } from "lucide-react"; 
+import { useAuthStore } from "../stores/auth.store"; // Mengambil store auth untuk info user & logout
+import CreatePost from "./CreatePost"; // Mengimpor komponen modal tambah pertanyaan
 
-// SVG Icon Panah Kembali untuk Mobile
-const IconBack = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="19" y1="12" x2="5" y2="12" />
-    <polyline points="12 19 5 12 12 5" />
+// ── SVG Icons dari Beranda.tsx ─────────────────────────────────────────────
+const IconSearch = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+const IconHome = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+  </svg>
+);
+const IconBell = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+const IconPencil = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
@@ -20,10 +38,28 @@ const BigBellIcon = () => (
 );
 
 export default function Notifikasi() {
+  const { user, logout } = useAuthStore();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState("Semua Notifikasi");
 
-  // Daftar menu filter kiri sesuai gambar
+  // State untuk kontrol Navbar & Modal
+  const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [showCreatePost, setShowCreatePost] = useState(false);
+  const [activeNav, setActiveNav] = useState("notif"); // Set default "notif" karena berada di halaman Notifikasi
+
+  // Mengatur penutupan menu profil otomatis saat klik di luar area profil
+  useEffect(() => {
+    function handleClickOutside() { setShowMenu(null); }
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  // Daftar menu filter kiri
   const filters = [
     "Semua Notifikasi", 
     "Kisah", 
@@ -37,7 +73,7 @@ export default function Notifikasi() {
     "Pengumuman"
   ];
 
-  // Data notifikasi dengan konten detail yang unik sesuai judul
+  // Data notifikasi
   const [notifications, setNotifications] = useState([
     { 
       id: "1", 
@@ -48,17 +84,6 @@ export default function Notifikasi() {
       subText: "Apa fakta yang membuatmu terheran-heran hari ini?",
       type: "Ruang",
       isUnread: false,
-      author: "Anomali Warga RT sebelah",
-      authorRole: "Pengguna Aktif · Contributor",
-      fullContent: [
-        "Jejak digital yang kita tinggalkan di internet ternyata jauh lebih nyata dari yang kita bayangkan. Setiap klik, setiap like, dan setiap komentar menciptakan jejak yang tidak akan pernah benar-benar hilang.",
-        "Dalam era digital ini, privasi bukan hanya tentang data pribadi, tetapi juga tentang bagaimana identitas digital kita terbentuk. Algoritma yang mempelajari perilaku kita, AI yang memprediksi preferensi kita, dan server yang menyimpan setiap jejak kita.",
-        "Pertanyaannya adalah: Berapa banyak dari kita yang benar-benar memahami dampak jejak digital yang kita ciptakan setiap hari?"
-      ],
-      comments: [
-        { id: 1, user: "Budi Santoso", role: "Software Engineer", comment: "Sangat relevan dengan era sekarang. Privacy bukan lagi luxury.", created: "2 jam lalu" },
-        { id: 2, user: "Siti Nurhayati", role: "Digital Analyst", comment: "Ini kenapa saya mulai menggunakan privacy tools dan VPN.", created: "1 jam lalu" }
-      ]
     },
     { 
       id: "2", 
@@ -69,18 +94,6 @@ export default function Notifikasi() {
       subText: null,
       type: "Ruang",
       isUnread: false,
-      author: "Talulah Rhym",
-      authorRole: "Gaming Expert · Content Creator",
-      fullContent: [
-        "Bermain slot dengan strategi yang tepat bisa meningkatkan peluang kemenangan Anda. Berikut beberapa tips yang sudah terbukti efektif:",
-        "1. Pahami RTP (Return to Player): Pilih mesin slot dengan RTP tinggi (minimal 96%). Ini menunjukkan persentase uang yang dikembalikan kepada pemain dalam jangka panjang.",
-        "2. Kelola Bankroll dengan Bijak: Tentukan batas maksimal yang bisa Anda kehilangan sebelum bermain. Jangan pernah bermain dengan uang yang Anda butuhkan untuk kebutuhan sehari-hari.",
-        "3. Gunakan Fitur Demo: Sebelum bermain dengan uang asli, coba versi demo untuk memahami mekanisme permainan.",
-        "4. Maksimalkan Bonus: Manfaatkan bonus deposit, free spins, dan promosi lainnya untuk memperbesar modal bermain Anda."
-      ],
-      comments: [
-        { id: 1, user: "Ahmad Ridho", role: "Pemain Berpengalaman", comment: "Tips yang sangat praktis. RTP memang kunci utamanya.", created: "3 hari lalu" }
-      ]
     },
     { 
       id: "3", 
@@ -91,16 +104,6 @@ export default function Notifikasi() {
       subText: null,
       type: "Kisah",
       isUnread: true,
-      author: "Dark Humor Daily",
-      authorRole: "Philosophy Enthusiast · Storyteller",
-      fullContent: [
-        "Ada sesuatu yang filosofis namun menyenangkan tentang bagaimana hidup bekerja. Tidak peduli seberapa keras kita coba menghindar dari takdir, entah bagaimana caranya kita selalu berakhir di tempat yang 'seharusnya' kita berada.",
-        "Saya pernah mengenal seseorang yang sangat takut dengan ketinggian. Dia hindari pesawat, hindari lift, bahkan hindari tangga dengan tiga anak tangga. Sampai suatu hari dia terjatuh dari tempat tidur dan patah tangan. Takdir punya cara tersendiri untuk menertawai kita.",
-        "Yang membuat saya tertawa adalah bagaimana kita sangat percaya diri bahwa rencana kita adalah rencana terbaik. Padahal, hidup adalah improvisasi yang indah. Dan kadang improvisasi yang paling baik adalah ketika kita berhenti merencanakan dan mulai menerima apa adanya."
-      ],
-      comments: [
-        { id: 1, user: "Rini Wijaya", role: "Philosophy Student", comment: "Ini seperti nasihat dari teman yang bijak sekaligus lucu.", created: "4 hari lalu" }
-      ]
     },
     { 
       id: "4", 
@@ -111,17 +114,6 @@ export default function Notifikasi() {
       subText: null,
       type: "Kisah",
       isUnread: false,
-      author: "Historia Magistra",
-      authorRole: "Historian · Cultural Writer",
-      fullContent: [
-        "Di tengah padang pasir Mesopotamia, tersembunyi sebuah kota kuno yang misterius: Samarra. Kota yang dibangun atas ambisi seorang khalifah, hanya untuk ditinggalkan dan dilupakan dalam hitungan dekade.",
-        "Khalifah Al-Mu'tasim mendirikan Samarra pada tahun 836 Masehi sebagai ibu kota baru KhaLifah Abbasiyah. Dengan investasi besar dan ribuan buruh, kota ini dirancang untuk menjadi jantung kekuasaan. Istana megah, masjid besar, dan jalan-jalan lebar mencerminkan ambisi pembangunannya.",
-        "Namun, kehidupan Samarra berakhir dengan sedih. Tanpa peperangan besar atau invasi musuh, kota ini secara bertahap ditinggalkan. Pada akhir abad ke-9, ibu kota dipindahkan, dan Samarra menjadi reruntuhan yang terlupakan.",
-        "Cerita Samarra mengajarkan kita bahwa kehancuran tidak selalu datang dari perang. Kadang, kota dan peradaban runtuh dari dalam, karena keputusan buruk, perubahan poli tik, atau sekadar keberuntungan yang membelok."
-      ],
-      comments: [
-        { id: 1, user: "Dr. Bambang Histori", role: "Sejarawan", comment: "Dokumentasi yang sangat baik tentang periode Samarra. Detailnya akurat.", created: "15 Mei" }
-      ]
     }
   ]);
 
@@ -136,15 +128,101 @@ export default function Notifikasi() {
   return (
     <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans pb-10">
       
-      {/* Header Mobile (Opsional, disembunyikan di layar besar agar mirip desktop Quora) */}
-      <header className="bg-[#262626] border-b border-[#333] sticky top-0 h-[50px] flex md:hidden items-center z-30 shadow-sm">
-        <div className="w-full flex items-center gap-4 px-4">
-          <Link to="/" className="text-[#939598] hover:text-[#e2e2e2] p-1.5 rounded-full hover:bg-[#333]">
-            <IconBack />
-          </Link>
-          <span className="font-bold text-sm tracking-wide">Notifikasi</span>
+      {/* Navbar Utama (Sama persis seperti di Beranda) */}
+      <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
+        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
+          <span
+            className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
+            onClick={() => navigate("/")}
+          >
+            Quora
+          </span>
+
+          <div className="flex-1 max-w-[340px]">
+            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-3 py-1.5 hover:border-[#636466] transition">
+              <span className="text-[#636466]"><IconSearch /></span>
+              <input
+                type="text"
+                placeholder="Cari Quora"
+                className="bg-transparent text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 ml-auto">
+            <Link
+              to="/"
+              onClick={() => setActiveNav("home")}
+              title="Beranda"
+              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+                activeNav === "home"
+                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
+                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
+              }`}
+            >
+              <IconHome />
+            </Link>
+
+            <Link
+              to="/notifikasi"
+              onClick={() => setActiveNav("notif")}
+              title="Notifikasi"
+              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+                activeNav === "notif"
+                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
+                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
+              }`}
+            >
+              <IconBell />
+            </Link>
+
+            <button
+              onClick={() => setShowCreatePost(true)}
+              className="ml-2 flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition"
+            >
+              <IconPencil />
+              Tambah Pertanyaan
+            </button>
+
+            <div className="relative ml-2" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowMenu(showMenu === "profile" ? null : "profile")}
+                className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
+              >
+                <img
+                  src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full border border-[#444]"
+                />
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#636466" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+              </button>
+
+              {showMenu === "profile" && (
+                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-52 py-1">
+                  <div className="px-4 py-3 border-b border-[#444]">
+                    <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
+                    <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
+                  </div>
+                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>👤</span>Edit Profil
+                  </button>
+                  <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>⚙️</span>Pengaturan
+                  </button>
+                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                    <span>🚪</span>Keluar
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </header>
+      </nav>
+
+      {/* Modal Tambah Pertanyaan */}
+      {showCreatePost && (
+        <CreatePost onClose={() => setShowCreatePost(false)} onSuccess={() => {}} />
+      )}
 
       {/* Main Layout Grid */}
       <div className="max-w-[1000px] mx-auto px-4 pt-6 flex gap-8">
@@ -159,7 +237,7 @@ export default function Notifikasi() {
                 onClick={() => setActiveFilter(filter)}
                 className={`w-full text-left text-[13px] px-3 py-1.5 rounded-[4px] transition-all ${
                   activeFilter === filter 
-                    ? "bg-[#b92b27]/10 text-[#b92b27] font-semibold" // Warna merah pudar ala Quora
+                    ? "bg-[#b92b27]/10 text-[#b92b27] font-semibold" 
                     : "text-[#939598] hover:bg-[#262626] hover:text-[#e2e2e2]"
                 }`}
               >
@@ -186,7 +264,7 @@ export default function Notifikasi() {
 
           {/* Render List Notifikasi */}
           <div className="bg-[#262626] rounded-[4px] border border-[#333] overflow-hidden">
-            {filteredNotif.map((notif, index) => (
+            {filteredNotif.map((notif) => (
               <div 
                 key={notif.id} 
                 onClick={() => navigate(`/notification/${notif.notificationId}`)}
@@ -223,7 +301,7 @@ export default function Notifikasi() {
               </div>
             ))}
 
-            {/* EMPTY STATE: Jika tidak ada notifikasi di filter tersebut (Sesuai Gambar 2) */}
+            {/* EMPTY STATE */}
             {filteredNotif.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
                 <div className="mb-4">
