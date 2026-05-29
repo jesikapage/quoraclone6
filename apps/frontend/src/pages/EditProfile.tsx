@@ -1,34 +1,36 @@
-<<<<<<< HEAD
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
 import Navbar from '../components/Navbar';
 
-// ── Design tokens (light, same as original Quora profile page) ────────────────
+// ── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-  bg: '#f7f7f8',
-  surface: '#ffffff',
-  border: '#dee0e1',
-  textPrimary: '#282829',
-  textSecondary: '#636466',
-  textMuted: '#939598',
-  blue: '#2b69d1',
+  bg: '#181818',
+  surface: '#242424',
+  surfaceHover: '#2d2d2d',
+  border: '#393939',
+  textPrimary: '#D5D6D7',
+  textSecondary: '#B1B3B6',
+  textMuted: '#87898c',
+  blue: '#3A7AEF',
+  blueBg: '#3A7AEF1a',
   red: '#b92b27',
+  redBg: '#b92b271a',
   green: '#1D9E75',
 };
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-// ── Draggable Avatar component ─────────────────────────────────────────────────
+// ── Draggable Avatar ──────────────────────────────────────────────────────────
 interface DraggableAvatarProps {
   src: string | null;
   initials: string;
   size?: number;
-  onOffsetChange?: (x: number, y: number) => void;
   offsetX: number;
   offsetY: number;
+  onOffsetChange?: (x: number, y: number) => void;
 }
 
-function DraggableAvatar({ src, initials, size = 80, onOffsetChange, offsetX, offsetY }: DraggableAvatarProps) {
+function DraggableAvatar({ src, initials, size = 80, offsetX, offsetY, onOffsetChange }: DraggableAvatarProps) {
   const isDragging = useRef(false);
   const startMouse = useRef({ x: 0, y: 0 });
   const startOffset = useRef({ x: 0, y: 0 });
@@ -39,13 +41,10 @@ function DraggableAvatar({ src, initials, size = 80, onOffsetChange, offsetX, of
     isDragging.current = true;
     startMouse.current = { x: e.clientX, y: e.clientY };
     startOffset.current = { x: offsetX, y: offsetY };
-
     const onMouseMove = (ev: MouseEvent) => {
       if (!isDragging.current) return;
-      const dx = ev.clientX - startMouse.current.x;
-      const dy = ev.clientY - startMouse.current.y;
-      const newX = Math.max(-50, Math.min(50, startOffset.current.x + dx));
-      const newY = Math.max(-50, Math.min(50, startOffset.current.y + dy));
+      const newX = Math.max(-50, Math.min(50, startOffset.current.x + ev.clientX - startMouse.current.x));
+      const newY = Math.max(-50, Math.min(50, startOffset.current.y + ev.clientY - startMouse.current.y));
       onOffsetChange?.(newX, newY);
     };
     const onMouseUp = () => {
@@ -57,21 +56,17 @@ function DraggableAvatar({ src, initials, size = 80, onOffsetChange, offsetX, of
     window.addEventListener('mouseup', onMouseUp);
   }, [src, offsetX, offsetY, onOffsetChange]);
 
-  // Touch support
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (!src) return;
     const touch = e.touches[0];
     isDragging.current = true;
     startMouse.current = { x: touch.clientX, y: touch.clientY };
     startOffset.current = { x: offsetX, y: offsetY };
-
     const onTouchMove = (ev: TouchEvent) => {
       if (!isDragging.current) return;
       const t = ev.touches[0];
-      const dx = t.clientX - startMouse.current.x;
-      const dy = t.clientY - startMouse.current.y;
-      const newX = Math.max(-50, Math.min(50, startOffset.current.x + dx));
-      const newY = Math.max(-50, Math.min(50, startOffset.current.y + dy));
+      const newX = Math.max(-50, Math.min(50, startOffset.current.x + t.clientX - startMouse.current.x));
+      const newY = Math.max(-50, Math.min(50, startOffset.current.y + t.clientY - startMouse.current.y));
       onOffsetChange?.(newX, newY);
     };
     const onTouchEnd = () => {
@@ -85,40 +80,26 @@ function DraggableAvatar({ src, initials, size = 80, onOffsetChange, offsetX, of
 
   return (
     <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        overflow: 'hidden',
-        border: `2px solid ${C.border}`,
-        background: C.blue,
-        flexShrink: 0,
-        position: 'relative',
-        cursor: src ? 'grab' : 'default',
-        userSelect: 'none',
-      }}
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
+      style={{
+        width: size, height: size, borderRadius: '50%',
+        overflow: 'hidden', border: `2px solid ${C.border}`,
+        background: C.blue, flexShrink: 0, position: 'relative',
+        cursor: src ? 'grab' : 'default', userSelect: 'none',
+      }}
       title={src ? 'Geser untuk mengatur posisi foto' : undefined}
     >
       {src ? (
         <img
-          src={src}
-          alt="Avatar"
-          draggable={false}
+          src={src} alt="Avatar" draggable={false}
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
+            width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none',
             objectPosition: `calc(50% + ${offsetX}px) calc(50% + ${offsetY}px)`,
-            pointerEvents: 'none',
           }}
         />
       ) : (
-        <div style={{
-          width: '100%', height: '100%',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
+        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ fontSize: size * 0.35, fontWeight: 800, color: '#fff', fontFamily: FONT }}>
             {initials}
           </span>
@@ -128,34 +109,20 @@ function DraggableAvatar({ src, initials, size = 80, onOffsetChange, offsetX, of
   );
 }
 
-// ── Main EditProfile ───────────────────────────────────────────────────────────
-=======
-import { useState, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthStore } from '../stores/auth.store';
-
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+// ── Main Component ────────────────────────────────────────────────────────────
 const EditProfile = () => {
   const navigate = useNavigate();
-  const { user, setAuth, logout, token } = useAuthStore();
+  const { user, setAuth, token } = useAuthStore();
 
   const nameParts = (user?.name || '').split(' ');
   const [firstName, setFirstName] = useState(nameParts[0] || '');
   const [lastName, setLastName] = useState(nameParts.slice(1).join(' ') || '');
   const [credential, setCredential] = useState('');
   const [bio, setBio] = useState('');
-<<<<<<< HEAD
 
-  // Avatar state — use user.avatar from store as base
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    user?.avatar || null
-  );
-  // Drag offset for repositioning the photo
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
   const [avatarOffsetX, setAvatarOffsetX] = useState(0);
   const [avatarOffsetY, setAvatarOffsetY] = useState(0);
-=======
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
 
   const [currPass, setCurrPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -167,10 +134,7 @@ const EditProfile = () => {
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-<<<<<<< HEAD
   const [search, setSearch] = useState('');
-=======
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
 
   const fullName = `${firstName} ${lastName}`.trim() || 'Nama Kamu';
   const initials = ((firstName[0] || '') + (lastName[0] || '')).toUpperCase() || '?';
@@ -183,32 +147,20 @@ const EditProfile = () => {
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-<<<<<<< HEAD
-    if (file.size > 5 * 1024 * 1024) {
-      showAlertMsg('error', 'Ukuran file maksimal 5MB.');
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { showAlertMsg('error', 'Ukuran file maksimal 5MB.'); return; }
     const reader = new FileReader();
     reader.onload = (ev) => {
       setAvatarPreview(ev.target?.result as string);
-      // Reset drag offset when a new photo is selected
       setAvatarOffsetX(0);
       setAvatarOffsetY(0);
     };
-=======
-    const reader = new FileReader();
-    reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
     reader.readAsDataURL(file);
   }
 
   function removeAvatar() {
     setAvatarPreview(null);
-<<<<<<< HEAD
     setAvatarOffsetX(0);
     setAvatarOffsetY(0);
-=======
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -229,36 +181,16 @@ const EditProfile = () => {
     e.preventDefault();
     if (!firstName.trim()) { showAlertMsg('error', 'Nama depan wajib diisi.'); return; }
     if (!token) { showAlertMsg('error', 'Sesi habis, silakan login ulang.'); return; }
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/profile`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: fullName,
-          avatar: avatarPreview || undefined,
-        }),
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: fullName, avatar: avatarPreview || undefined }),
       });
       const data = await res.json();
       if (!res.ok) { showAlertMsg('error', data.error || 'Gagal menyimpan profil.'); return; }
-<<<<<<< HEAD
-
-      // ── Update auth store sehingga Navbar & semua komponen ikut update ──
-      if (user) {
-        const updatedUser = {
-          ...user,
-          name: fullName,
-          avatar: avatarPreview || user.avatar,
-        };
-        setAuth(updatedUser, token);
-      }
-
-=======
-      if (user) setAuth(data.user, token);
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+      // Update auth store → Navbar & seluruh app ikut update
+      if (user) setAuth({ ...user, name: fullName, avatar: avatarPreview || user.avatar }, token);
       showAlertMsg('success', 'Profil berhasil disimpan!');
     } catch {
       showAlertMsg('error', 'Koneksi ke server gagal.');
@@ -271,22 +203,11 @@ const EditProfile = () => {
     if (newPass.length < 6) { showAlertMsg('error', 'Password baru minimal 6 karakter.'); return; }
     if (newPass !== confPass) { showAlertMsg('error', 'Konfirmasi password tidak cocok.'); return; }
     if (!token) { showAlertMsg('error', 'Sesi habis, silakan login ulang.'); return; }
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/profile`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-<<<<<<< HEAD
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ currentPassword: currPass, newPassword: newPass }),
-=======
-        body: JSON.stringify({
-          currentPassword: currPass,
-          newPassword: newPass,
-        }),
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
       });
       const data = await res.json();
       if (!res.ok) { showAlertMsg('error', data.error || 'Gagal mengubah password.'); return; }
@@ -297,31 +218,33 @@ const EditProfile = () => {
     }
   }
 
-<<<<<<< HEAD
-  const inp = {
-    width: '100%', background: C.surface, border: `1px solid ${C.border}`,
+  const inp: React.CSSProperties = {
+    width: '100%', background: '#1e1e1e', border: `1px solid ${C.border}`,
     borderRadius: 3, padding: '8px 12px', fontSize: 13, color: C.textPrimary,
-    outline: 'none', fontFamily: FONT, boxSizing: 'border-box' as const,
+    outline: 'none', fontFamily: FONT, boxSizing: 'border-box',
     transition: 'border-color 0.15s',
   };
 
+  const focusBorder = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e.target.style.borderColor = C.blue);
+  const blurBorder = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e.target.style.borderColor = C.border);
+
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
-      {/* ── Navbar (sama persis dengan Beranda) ── */}
+      {/* Navbar sama dengan Beranda */}
       <Navbar search={search} onSearchChange={setSearch} />
 
       <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 16px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-        {/* ── Left sidebar ── */}
-        <aside style={{ width: 220, flexShrink: 0 }} className="profile-sidebar">
+
+        {/* ── Sidebar kiri ── */}
+        <aside className="ep-sidebar" style={{ width: 220, flexShrink: 0 }}>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3, overflow: 'hidden' }}>
-            {/* Profile preview in sidebar */}
+            {/* Preview profil */}
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
               <DraggableAvatar
-                src={avatarPreview}
-                initials={initials}
-                size={40}
-                offsetX={avatarOffsetX}
-                offsetY={avatarOffsetY}
+                src={avatarPreview} initials={initials} size={40}
+                offsetX={avatarOffsetX} offsetY={avatarOffsetY}
                 onOffsetChange={(x, y) => { setAvatarOffsetX(x); setAvatarOffsetY(y); }}
               />
               <div style={{ minWidth: 0 }}>
@@ -334,28 +257,27 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {/* Sidebar tabs */}
-            {[
+            {/* Tab sidebar */}
+            {([
               { key: 'profile', label: 'Edit Profil', icon: '👤' },
               { key: 'account', label: 'Keamanan Akun', icon: '🔒' },
-            ].map((item) => {
+            ] as const).map((item) => {
               const isActive = activeTab === item.key;
               return (
                 <button
                   key={item.key}
-                  onClick={() => setActiveTab(item.key as 'profile' | 'account')}
+                  onClick={() => setActiveTab(item.key)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    width: '100%', textAlign: 'left',
-                    padding: '10px 16px', border: 'none',
-                    background: isActive ? '#ebf0ff' : 'none',
+                    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                    textAlign: 'left', padding: '10px 16px', border: 'none',
+                    background: isActive ? C.blueBg : 'none',
                     color: isActive ? C.blue : C.textPrimary,
-                    fontWeight: isActive ? 700 : 400,
-                    fontSize: 13, fontFamily: FONT, cursor: 'pointer',
+                    fontWeight: isActive ? 700 : 400, fontSize: 13,
+                    fontFamily: FONT, cursor: 'pointer',
                     borderRight: isActive ? `2px solid ${C.blue}` : '2px solid transparent',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = '#f1f2f2'; }}
+                  onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
                 >
                   <span>{item.icon}</span> {item.label}
@@ -365,87 +287,23 @@ const EditProfile = () => {
           </div>
         </aside>
 
-        {/* ── Main content ── */}
+        {/* ── Konten utama ── */}
         <div style={{ flex: 1, minWidth: 0, maxWidth: 700 }}>
+
           {/* Alert */}
           {alert && (
             <div style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '10px 16px', borderRadius: 3, fontSize: 13, marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
+              borderRadius: 3, fontSize: 13, marginBottom: 12, fontFamily: FONT,
               background: alert.type === 'success' ? '#e6f7f2' : '#fff0f0',
               border: `1px solid ${alert.type === 'success' ? C.green : C.red}`,
               color: alert.type === 'success' ? '#0F6E56' : C.red,
-              fontFamily: FONT,
             }}>
-=======
-  const inputClass = "w-full bg-white border border-[#dee0e1] focus:border-[#282829] text-[#282829] text-sm px-3 py-2 rounded-[3px] outline-none transition placeholder-[#939598]";
-  const labelClass = "block text-[13px] font-semibold text-[#282829] mb-1";
-
-  return (
-    <div className="min-h-screen bg-[#f7f7f8] font-sans text-[#282829]">
-      <nav className="h-[50px] bg-white border-b border-[#dee0e1] sticky top-0 z-30 shadow-sm">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-3 px-4">
-          <span className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none" onClick={() => navigate('/')}>
-            Quora
-          </span>
-          <div className="flex-1" />
-          <nav className="flex gap-1 items-center text-sm">
-            <Link to="/" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-1.5 rounded-[3px] transition">Beranda</Link>
-            <Link to="/notifications" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-1.5 rounded-[3px] transition">Notifikasi</Link>
-            <Link to="/profile/edit" className="text-[#282829] font-semibold bg-[#f1f2f2] px-3 py-1.5 rounded-[3px]">Profil</Link>
-            <button onClick={() => { logout(); navigate('/login'); }} className="text-[#b92b27] hover:bg-[#fff0f0] px-3 py-1.5 rounded-[3px] transition">
-              Keluar
-            </button>
-          </nav>
-        </div>
-      </nav>
-
-      <div className="max-w-[1000px] mx-auto px-4 py-6 flex gap-5">
-        <aside className="w-[220px] flex-shrink-0 hidden md:block">
-          <div className="bg-white border border-[#dee0e1] rounded-[3px] overflow-hidden">
-            <div className="p-4 border-b border-[#dee0e1] flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#2b69d1] flex items-center justify-center overflow-hidden flex-shrink-0">
-                {avatarPreview
-                  ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                  : <span className="text-sm font-bold text-white">{initials}</span>}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-[#282829] truncate">{fullName}</p>
-                <p className="text-[11px] text-[#636466] truncate">{credential || 'Tambah kredensial'}</p>
-              </div>
-            </div>
-            {[
-              { key: 'profile', label: 'Edit Profil', icon: '👤' },
-              { key: 'account', label: 'Keamanan Akun', icon: '🔒' },
-            ].map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setActiveTab(item.key as 'profile' | 'account')}
-                className={`w-full text-left flex items-center gap-3 px-4 py-2.5 text-[13px] transition ${
-                  activeTab === item.key
-                    ? 'bg-[#ebf0ff] text-[#2b69d1] font-semibold border-r-2 border-[#2b69d1]'
-                    : 'text-[#282829] hover:bg-[#f1f2f2]'
-                }`}
-              >
-                <span>{item.icon}</span>{item.label}
-              </button>
-            ))}
-          </div>
-        </aside>
-
-        <div className="flex-1 min-w-0 max-w-[700px] space-y-4">
-          {alert && (
-            <div className={`flex items-center gap-2 px-4 py-3 rounded-[3px] text-sm border ${
-              alert.type === 'success' ? 'bg-[#e6f7f2] border-[#1D9E75] text-[#0F6E56]' : 'bg-[#fff0f0] border-[#b92b27] text-[#b92b27]'
-            }`}>
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
-              <span>{alert.type === 'success' ? '✓' : '✗'}</span>
-              {alert.msg}
+              {alert.type === 'success' ? '✓' : '✗'} {alert.msg}
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* ── Edit Profil tab ── */}
+          {/* ── Tab Edit Profil ── */}
           {activeTab === 'profile' && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3 }}>
               <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
@@ -454,32 +312,27 @@ const EditProfile = () => {
               </div>
 
               <form onSubmit={handleSaveProfile} style={{ padding: '20px 24px' }}>
-                {/* Avatar section */}
+                {/* Avatar */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24, paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
-                  {/* Draggable avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <DraggableAvatar
-                      src={avatarPreview}
-                      initials={initials}
-                      size={80}
-                      offsetX={avatarOffsetX}
-                      offsetY={avatarOffsetY}
+                      src={avatarPreview} initials={initials} size={80}
+                      offsetX={avatarOffsetX} offsetY={avatarOffsetY}
                       onOffsetChange={(x, y) => { setAvatarOffsetX(x); setAvatarOffsetY(y); }}
                     />
-                    {/* Hover overlay to click and upload */}
+                    {/* Hover overlay */}
                     <div
+                      className="ep-avatar-overlay"
                       onClick={() => fileInputRef.current?.click()}
                       style={{
                         position: 'absolute', inset: 0, borderRadius: '50%',
-                        background: 'rgba(0,0,0,0.42)', display: 'flex',
+                        background: 'rgba(0,0,0,0.55)', display: 'flex',
                         alignItems: 'center', justifyContent: 'center',
                         opacity: 0, cursor: 'pointer', transition: 'opacity 0.18s',
                       }}
-                      onMouseEnter={(e) => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
-                      onMouseLeave={(e) => (e.currentTarget as HTMLDivElement).style.opacity = '0'}
                     >
                       <span style={{ color: '#fff', fontSize: 11, fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>
-                        Ganti<br/>Foto
+                        Ganti<br />Foto
                       </span>
                     </div>
                   </div>
@@ -490,66 +343,24 @@ const EditProfile = () => {
                     <p style={{ fontSize: 15, fontWeight: 700, color: C.textPrimary, margin: '0 0 10px' }}>{fullName}</p>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        style={{
-                          fontSize: 13, fontWeight: 600, color: C.blue,
-                          border: `1px solid ${C.blue}`, borderRadius: 3,
-                          padding: '6px 14px', background: 'none', cursor: 'pointer',
-                          fontFamily: FONT, transition: 'background 0.15s',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = '#ebf0ff'}
+                        type="button" onClick={() => fileInputRef.current?.click()}
+                        style={{ fontSize: 13, fontWeight: 600, color: C.blue, border: `1px solid ${C.blue}`, borderRadius: 3, padding: '6px 14px', background: 'none', cursor: 'pointer', fontFamily: FONT }}
+                        onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = C.blueBg}
                         onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = 'none'}
                       >
                         Upload Foto Profil
                       </button>
                       {avatarPreview && (
                         <button
-                          type="button"
-                          onClick={removeAvatar}
-                          style={{
-                            fontSize: 13, fontWeight: 600, color: C.textSecondary,
-                            border: `1px solid ${C.border}`, borderRadius: 3,
-                            padding: '6px 14px', background: 'none', cursor: 'pointer',
-                            fontFamily: FONT, transition: 'all 0.15s',
-                          }}
+                          type="button" onClick={removeAvatar}
+                          style={{ fontSize: 13, fontWeight: 600, color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3, padding: '6px 14px', background: 'none', cursor: 'pointer', fontFamily: FONT }}
                           onMouseEnter={(e) => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = C.red; b.style.color = C.red; }}
                           onMouseLeave={(e) => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = C.border; b.style.color = C.textSecondary; }}
                         >
-=======
-          {activeTab === 'profile' && (
-            <div className="bg-white border border-[#dee0e1] rounded-[3px]">
-              <div className="px-6 py-4 border-b border-[#dee0e1]">
-                <h2 className="text-[15px] font-bold text-[#282829]">Edit Profil</h2>
-                <p className="text-[13px] text-[#636466] mt-0.5">Informasi ini terlihat publik di profil kamu.</p>
-              </div>
-              <form onSubmit={handleSaveProfile} className="px-6 py-5">
-                <div className="flex items-center gap-5 mb-6 pb-6 border-b border-[#dee0e1]">
-                  <div className="relative w-20 h-20 group cursor-pointer flex-shrink-0" onClick={() => fileInputRef.current?.click()}>
-                    <div className="w-20 h-20 rounded-full bg-[#2b69d1] flex items-center justify-center overflow-hidden border-2 border-[#dee0e1]">
-                      {avatarPreview
-                        ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                        : <span className="text-3xl font-bold text-white">{initials}</span>}
-                    </div>
-                    <div className="absolute inset-0 rounded-full bg-black bg-opacity-40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                      <span className="text-white text-xs font-bold">Ganti</span>
-                    </div>
-                  </div>
-                  <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                  <div>
-                    <p className="font-bold text-[15px] text-[#282829]">{fullName}</p>
-                    <div className="flex gap-2 mt-3">
-                      <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[13px] font-semibold text-[#2b69d1] border border-[#2b69d1] hover:bg-[#ebf0ff] px-3 py-1.5 rounded-[3px] transition">
-                        Upload Foto Profil
-                      </button>
-                      {avatarPreview && (
-                        <button type="button" onClick={removeAvatar} className="text-[13px] font-semibold text-[#636466] border border-[#dee0e1] hover:border-[#b92b27] hover:text-[#b92b27] px-3 py-1.5 rounded-[3px] transition">
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
                           Hapus
                         </button>
                       )}
                     </div>
-<<<<<<< HEAD
                     <p style={{ fontSize: 11, color: C.textMuted, margin: '8px 0 0' }}>
                       JPG, PNG atau GIF. Maks 5MB.
                       {avatarPreview && <span style={{ color: C.blue }}> · Geser foto untuk mengatur posisi</span>}
@@ -557,45 +368,24 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* Name fields */}
+                {/* Nama */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                       Nama Depan <span style={{ color: C.red }}>*</span>
                     </label>
-                    <input
-                      type="text" value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Nama depan" style={inp}
-                      onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                      onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                    />
+                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Nama depan" style={inp} onFocus={focusBorder} onBlur={blurBorder} />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
-                      Nama Belakang
-                    </label>
-                    <input
-                      type="text" value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Nama belakang" style={inp}
-                      onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                      onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                    />
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>Nama Belakang</label>
+                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nama belakang" style={inp} onFocus={focusBorder} onBlur={blurBorder} />
                   </div>
                 </div>
 
-                {/* Credential */}
+                {/* Kredensial */}
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>Kredensial</label>
-                  <input
-                    type="text" value={credential}
-                    onChange={(e) => setCredential(e.target.value)}
-                    placeholder="Contoh: Mahasiswa Informatika UNTAN"
-                    maxLength={60} style={inp}
-                    onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                    onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                  />
+                  <input type="text" value={credential} onChange={(e) => setCredential(e.target.value)} placeholder="Contoh: Mahasiswa Informatika UNTAN" maxLength={60} style={inp} onFocus={focusBorder} onBlur={blurBorder} />
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                     <p style={{ fontSize: 11, color: C.textMuted, margin: 0 }}>Tampil di bawah nama di setiap postingan.</p>
                     <p style={{ fontSize: 11, color: C.textMuted, margin: 0 }}>{credential.length}/60</p>
@@ -605,72 +395,30 @@ const EditProfile = () => {
                 {/* Bio */}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>Tentang Saya</label>
-                  <textarea
-                    value={bio} onChange={(e) => setBio(e.target.value)}
-                    placeholder="Ceritakan tentang dirimu..." rows={4}
-                    style={{ ...inp, resize: 'vertical' } as any}
-                    onFocus={(e) => (e.target as HTMLTextAreaElement).style.borderColor = C.blue}
-                    onBlur={(e) => (e.target as HTMLTextAreaElement).style.borderColor = C.border}
+                  <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Ceritakan tentang dirimu..." rows={4}
+                    style={{ ...inp, resize: 'vertical' } as React.CSSProperties}
+                    onFocus={focusBorder as any} onBlur={blurBorder as any}
                   />
                 </div>
 
                 {/* Actions */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-                  <button
-                    type="button" onClick={() => navigate('/')}
-                    style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}
-                  >
+                  <button type="button" onClick={() => navigate('/')} style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}>
                     Batal
                   </button>
-                  <button
-                    type="submit"
+                  <button type="submit"
                     style={{ background: C.blue, color: '#fff', fontSize: 13, fontWeight: 700, padding: '8px 22px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: FONT }}
                     onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = '#1c5bbf'}
                     onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = C.blue}
                   >
                     Simpan Perubahan
                   </button>
-=======
-                    <p className="text-[11px] text-[#939598] mt-2">JPG, PNG atau GIF. Maks 5MB.</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className={labelClass}>Nama Depan <span className="text-[#b92b27]">*</span></label>
-                    <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Nama depan" className={inputClass} />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Nama Belakang</label>
-                    <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Nama belakang" className={inputClass} />
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <label className={labelClass}>Kredensial</label>
-                  <input type="text" value={credential} onChange={(e) => setCredential(e.target.value)} placeholder="Contoh: Mahasiswa Informatika UNTAN" maxLength={60} className={inputClass} />
-                  <div className="flex justify-between mt-1">
-                    <p className="text-[11px] text-[#939598]">Tampil di bawah nama di setiap postingan.</p>
-                    <p className="text-[11px] text-[#939598]">{credential.length}/60</p>
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className={labelClass}>Tentang Saya</label>
-                  <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Ceritakan tentang dirimu..." rows={4} className={`${inputClass} resize-y`} />
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#dee0e1]">
-                  <button type="button" onClick={() => navigate('/')} className="border border-[#dee0e1] text-[#636466] hover:text-[#282829] text-sm font-semibold px-5 py-2 rounded-full transition">Batal</button>
-                  <button type="submit" className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-sm font-bold px-6 py-2 rounded-full transition">Simpan Perubahan</button>
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
                 </div>
               </form>
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* ── Keamanan Akun tab ── */}
+          {/* ── Tab Keamanan Akun ── */}
           {activeTab === 'account' && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3 }}>
               <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
@@ -679,78 +427,33 @@ const EditProfile = () => {
               </div>
 
               <form onSubmit={handleSavePassword} style={{ padding: '20px 24px' }}>
-                {/* Current password */}
+                {/* Password saat ini */}
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Password Saat Ini <span style={{ color: C.red }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <input
-                      type={showCurr ? 'text' : 'password'} value={currPass}
-                      onChange={(e) => setCurrPass(e.target.value)}
-                      placeholder="Masukkan password saat ini"
-                      style={{ ...inp, paddingRight: 96 }}
-                      onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                      onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                    />
-                    <button
-                      type="button" onClick={() => setShowCurr(!showCurr)}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}
-                    >
-=======
-          {activeTab === 'account' && (
-            <div className="bg-white border border-[#dee0e1] rounded-[3px]">
-              <div className="px-6 py-4 border-b border-[#dee0e1]">
-                <h2 className="text-[15px] font-bold text-[#282829]">Keamanan Akun</h2>
-                <p className="text-[13px] text-[#636466] mt-0.5">Pastikan akun kamu aman dengan password yang kuat.</p>
-              </div>
-              <form onSubmit={handleSavePassword} className="px-6 py-5">
-                <div className="mb-5">
-                  <label className={labelClass}>Password Saat Ini <span className="text-[#b92b27]">*</span></label>
-                  <div className="relative">
-                    <input type={showCurr ? 'text' : 'password'} value={currPass} onChange={(e) => setCurrPass(e.target.value)} placeholder="Masukkan password saat ini" className={`${inputClass} pr-24`} />
-                    <button type="button" onClick={() => setShowCurr(!showCurr)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline">
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+                    <input type={showCurr ? 'text' : 'password'} value={currPass} onChange={(e) => setCurrPass(e.target.value)} placeholder="Masukkan password saat ini" style={{ ...inp, paddingRight: 96 }} onFocus={focusBorder} onBlur={blurBorder} />
+                    <button type="button" onClick={() => setShowCurr(!showCurr)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>
                       {showCurr ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
                   </div>
                 </div>
 
-<<<<<<< HEAD
                 <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '0 0 20px' }} />
 
-                {/* New password */}
+                {/* Password baru */}
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Password Baru <span style={{ color: C.red }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <input
-                      type={showNew ? 'text' : 'password'} value={newPass}
-                      onChange={(e) => setNewPass(e.target.value)}
-                      placeholder="Minimal 6 karakter"
-                      style={{ ...inp, paddingRight: 96 }}
-                      onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                      onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                    />
-                    <button
-                      type="button" onClick={() => setShowNew(!showNew)}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}
-                    >
-=======
-                <hr className="border-[#dee0e1] my-5" />
-
-                <div className="mb-5">
-                  <label className={labelClass}>Password Baru <span className="text-[#b92b27]">*</span></label>
-                  <div className="relative">
-                    <input type={showNew ? 'text' : 'password'} value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="Minimal 6 karakter" className={`${inputClass} pr-24`} />
-                    <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline">
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+                    <input type={showNew ? 'text' : 'password'} value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="Minimal 6 karakter" style={{ ...inp, paddingRight: 96 }} onFocus={focusBorder} onBlur={blurBorder} />
+                    <button type="button" onClick={() => setShowNew(!showNew)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>
                       {showNew ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
                   </div>
                   {newPass && (
-<<<<<<< HEAD
                     <div style={{ marginTop: 8 }}>
                       <div style={{ display: 'flex', gap: 4 }}>
                         {[1, 2, 3, 4].map((i) => (
@@ -758,96 +461,51 @@ const EditProfile = () => {
                         ))}
                       </div>
                       <p style={{ fontSize: 11, marginTop: 4, fontWeight: 600, color: strength.color, fontFamily: FONT }}>{strength.label}</p>
-=======
-                    <div className="mt-2">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4].map((i) => (
-                          <div key={i} className="h-1 flex-1 rounded-full transition-all duration-300" style={{ background: i <= strength.score ? strength.color : '#dee0e1' }} />
-                        ))}
-                      </div>
-                      <p className="text-[11px] mt-1 font-semibold" style={{ color: strength.color }}>{strength.label}</p>
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
                     </div>
                   )}
                 </div>
 
-<<<<<<< HEAD
-                {/* Confirm password */}
+                {/* Konfirmasi password */}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Konfirmasi Password Baru <span style={{ color: C.red }}>*</span>
                   </label>
                   <div style={{ position: 'relative' }}>
-                    <input
-                      type={showConf ? 'text' : 'password'} value={confPass}
-                      onChange={(e) => setConfPass(e.target.value)}
-                      placeholder="Ulangi password baru"
-                      style={{ ...inp, paddingRight: 96 }}
-                      onFocus={(e) => (e.target as HTMLInputElement).style.borderColor = C.blue}
-                      onBlur={(e) => (e.target as HTMLInputElement).style.borderColor = C.border}
-                    />
-                    <button
-                      type="button" onClick={() => setShowConf(!showConf)}
-                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}
-                    >
-=======
-                <div className="mb-6">
-                  <label className={labelClass}>Konfirmasi Password Baru <span className="text-[#b92b27]">*</span></label>
-                  <div className="relative">
-                    <input type={showConf ? 'text' : 'password'} value={confPass} onChange={(e) => setConfPass(e.target.value)} placeholder="Ulangi password baru" className={`${inputClass} pr-24`} />
-                    <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline">
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+                    <input type={showConf ? 'text' : 'password'} value={confPass} onChange={(e) => setConfPass(e.target.value)} placeholder="Ulangi password baru" style={{ ...inp, paddingRight: 96 }} onFocus={focusBorder} onBlur={blurBorder} />
+                    <button type="button" onClick={() => setShowConf(!showConf)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 12, color: C.blue, fontWeight: 600, cursor: 'pointer', fontFamily: FONT }}>
                       {showConf ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
                   </div>
                   {confPass && (
-<<<<<<< HEAD
-                    <p style={{ fontSize: 11, marginTop: 4, fontWeight: 600, color: newPass === confPass ? C.green : C.red, fontFamily: FONT }}>
-=======
-                    <p className="text-[11px] mt-1 font-semibold" style={{ color: newPass === confPass ? '#1D9E75' : '#b92b27' }}>
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+                    <p style={{ fontSize: 11, marginTop: 4, fontWeight: 600, fontFamily: FONT, color: newPass === confPass ? C.green : C.red }}>
                       {newPass === confPass ? '✓ Password cocok' : '✗ Password tidak cocok'}
                     </p>
                   )}
                 </div>
 
-<<<<<<< HEAD
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-                  <button
-                    type="button" onClick={() => { setCurrPass(''); setNewPass(''); setConfPass(''); }}
-                    style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}
-                  >
+                  <button type="button" onClick={() => { setCurrPass(''); setNewPass(''); setConfPass(''); }} style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}>
                     Reset
                   </button>
-                  <button
-                    type="submit"
+                  <button type="submit"
                     style={{ background: C.blue, color: '#fff', fontSize: 13, fontWeight: 700, padding: '8px 22px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: FONT }}
                     onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = '#1c5bbf'}
                     onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = C.blue}
                   >
                     Update Password
                   </button>
-=======
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#dee0e1]">
-                  <button type="button" onClick={() => { setCurrPass(''); setNewPass(''); setConfPass(''); }} className="border border-[#dee0e1] text-[#636466] text-sm font-semibold px-5 py-2 rounded-full transition">Reset</button>
-                  <button type="submit" className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-sm font-bold px-6 py-2 rounded-full transition">Update Password</button>
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
                 </div>
               </form>
             </div>
           )}
         </div>
       </div>
-<<<<<<< HEAD
 
       <style>{`
-        .profile-sidebar { display: block; }
-        @media (max-width: 640px) {
-          .profile-sidebar { display: none; }
-        }
+        .ep-sidebar { display: block; }
+        @media (max-width: 640px) { .ep-sidebar { display: none; } }
+        .ep-avatar-overlay:hover { opacity: 1 !important; }
       `}</style>
-=======
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
     </div>
   );
 };
