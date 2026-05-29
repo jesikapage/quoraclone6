@@ -22,15 +22,15 @@ type Post = {
 };
 
 const C = {
-  bg: "#181919",
-  surface: "#262626",
-  surfaceHover: "#2f2f2f",
-  border: "#333333",
-  textPrimary: "#e2e2e2",
-  textSecondary: "#939598",
-  textMuted: "#636466",
-  red: "#B92B27",
-  blue: "#2B69D1",
+  bg: "#181818",
+  surface: "#242424",
+  surfaceHover: "#2d2d2d",
+  border: "#393939",
+  textPrimary: "#D5D6D7",
+  textSecondary: "#B1B3B6",
+  textMuted: "#87898c",
+  red: "#b92b27",
+  blue: "#3A7AEF",
 };
 
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', Ubuntu, Cantarell, 'Helvetica Neue', Oxygen-Sans, sans-serif";
@@ -40,15 +40,18 @@ function timeAgo(dateStr: string) {
   if (diff < 60) return `${diff} detik lalu`;
   if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
-  return `${Math.floor(diff / 86400)} hari lalu`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} hari lalu`;
+  return "1bln";
 }
 
 function PostCard({ post }: { post: Post }) {
   const { token } = useAuthStore();
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Mencegah pemicu klik navigasi halaman detail
     if (!token) return alert("Login dulu untuk like!");
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/likes/${post.id}`, {
@@ -64,67 +67,107 @@ function PostCard({ post }: { post: Post }) {
   };
 
   return (
-    <article style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "16px", boxShadow: "0 1px 3px rgba(0,0,0,0.4)", marginBottom: "24px", borderRadius: "4px" }}>
+    <article 
+      onClick={() => navigate(`/posts/${post.id}`)}
+      style={{ 
+        background: C.surface, 
+        border: `1px solid ${C.border}`, 
+        marginBottom: "8px", 
+        borderRadius: "4px", 
+        padding: "12px 16px",
+        cursor: "pointer",
+        transition: "background 0.2s"
+      }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.surfaceHover; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = C.surface; }}
+    >
+      {/* Header Postingan */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
           <img
             src={post.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${post.user.name}`}
             alt={post.user.name}
-            style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${C.border}`, flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
           />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontFamily: FONT, fontWeight: 600, fontSize: 15, color: C.textPrimary }}>
+          <div style={{ display: "flex", flexDirection: "column", marginTop: "-2px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
+              <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.textPrimary }}>
                 {post.user.name}
               </span>
+              <span 
+                onClick={(e) => e.stopPropagation()} 
+                style={{ fontFamily: FONT, fontSize: 13, color: C.blue, fontWeight: 600, cursor: "pointer" }}
+              >
+                · Ikuti
+              </span>
             </div>
-            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, lineHeight: 1.4, margin: 0 }}>
-              {timeAgo(post.createdAt)}
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "400px" }}>
+              S1 di Ilmu Komputer, Universitas Tanjungpura · {timeAgo(post.createdAt)}
             </p>
           </div>
         </div>
+        <button 
+          onClick={(e) => { e.stopPropagation(); }}
+          style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: "4px" }}
+        >
+          <X size={18} />
+        </button>
       </div>
 
-      <h2 style={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: C.textPrimary, lineHeight: 1.3, margin: "8px 0" }}>
+      {/* Konten Postingan Asli */}
+      <p style={{ 
+        fontFamily: FONT, 
+        fontSize: 15, 
+        color: C.textPrimary, 
+        lineHeight: 1.6, 
+        margin: "8px 0 12px 0", 
+        whiteSpace: "pre-wrap",
+        display: "-webkit-box", 
+        WebkitLineClamp: 4, 
+        WebkitBoxOrient: "vertical", 
+        overflow: "hidden" 
+      }}>
         {post.content}
-      </h2>
-
-      <Link
-        to={`/posts/${post.id}`}
-        style={{ fontFamily: FONT, fontSize: 15, color: C.blue, lineHeight: 1.6, margin: "8px 0", textDecoration: "none", display: "block" }}
-      >
-        Klik untuk membaca selengkapnya...
-      </Link>
+      </p>
 
       {post.imageUrl && (
-        <img src={post.imageUrl} alt="post" style={{ width: "100%", maxHeight: 256, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
+        <img src={post.imageUrl} alt="post" style={{ width: "100%", maxHeight: 400, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
       )}
 
-      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
-        <div style={{ display: "flex", borderRadius: 100, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+      {/* Action Bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", background: "#2B2D2D", borderRadius: 100, overflow: "hidden", border: `1px solid ${C.border}` }}>
           <button
             onClick={handleLike}
-            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", background: liked ? "#1a2a4a" : C.surface, color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 15, fontWeight: 500, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: liked ? "#3A7AEF20" : "transparent", color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 13, fontWeight: 600, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer" }}
           >
-            <ThumbsUp size={14} /> Dukung · {likeCount}
+            <ThumbsUp size={16} fill={liked ? C.blue : "none"} /> Dukung · {likeCount}
           </button>
-          <button style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "5px 10px", background: C.surface, color: C.textSecondary, border: "none", cursor: "pointer" }}>
-            <ThumbsDown size={14} />
+          <button 
+            onClick={(e) => e.stopPropagation()}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "transparent", color: C.textSecondary, border: "none", cursor: "pointer" }}
+          >
+            <ThumbsDown size={16} />
           </button>
         </div>
 
-        <Link
-          to={`/posts/${post.id}`}
-          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, textDecoration: "none" }}
+        <div
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary }}
         >
-          <MessageCircle size={14} /> {post._count && post._count.comments > 0 ? `${post._count.comments} Komentar` : "Komentar"}
-        </Link>
+          <MessageCircle size={16} /> {post._count?.comments || 0} Komentar
+        </div>
 
-        <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, background: C.surface, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}>
-          <Repeat2 size={14} /> Bagikan
+        <button 
+          onClick={(e) => e.stopPropagation()}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer" }}
+        >
+          <Repeat2 size={16} /> {Math.floor(Math.random() * 20)}
         </button>
 
-        <button style={{ marginLeft: "auto", color: C.textMuted, background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+        <button 
+          onClick={(e) => e.stopPropagation()}
+          style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px" }}
+        >
           <MoreHorizontal size={18} />
         </button>
       </div>
@@ -134,29 +177,28 @@ function PostCard({ post }: { post: Post }) {
 
 function FeedTabs({ avatarUrl, onOpenModal }: { avatarUrl: string, onOpenModal: () => void }) {
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, marginBottom: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
-        <img src={avatarUrl} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0 }} />
-        <input
-          type="text"
-          placeholder="Apa yang ingin Anda tanyakan atau bagikan?"
-          readOnly
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px" }}>
+        <img src={avatarUrl} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0, objectFit: "cover" }} />
+        <div
           onClick={onOpenModal}
-          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: FONT, fontSize: 15, color: C.textMuted, cursor: "pointer" }}
-        />
+          style={{ flex: 1, background: "#181818", border: `1px solid ${C.border}`, borderRadius: 100, padding: "8px 16px", cursor: "text", display: "flex", alignItems: "center" }}
+        >
+          <span style={{ fontFamily: FONT, fontSize: 14, color: C.textMuted }}>Apa yang ingin Anda tanyakan atau bagikan?</span>
+        </div>
       </div>
-      <div style={{ display: "flex" }}>
+      <div style={{ display: "flex", padding: "0 8px 8px 8px" }}>
         {[
-          { icon: <HelpCircle size={16} />, label: "Tanya" },
-          { icon: <PenLine size={16} />, label: "Jawab" },
-          { icon: <Send size={16} />, label: "Kiriman" },
-        ].map((item, i) => (
+          { icon: <HelpCircle size={18} />, label: "Tanya" },
+          { icon: <PenLine size={18} />, label: "Jawab" },
+          { icon: <Send size={18} />, label: "Kiriman" },
+        ].map((item) => (
           <button
             key={item.label}
             onClick={onOpenModal}
-            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderLeft: i > 0 ? `1px solid ${C.border}` : "none", background: C.surface, border: "none", fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "8px 0", borderRadius: 100, background: "transparent", border: "none", fontFamily: FONT, fontSize: 14, fontWeight: 600, color: C.textSecondary, cursor: "pointer" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surface; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
           >
             {item.icon} {item.label}
           </button>
@@ -239,45 +281,44 @@ export default function Beranda() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, fontSize: 15 }}>
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, fontSize: 15, paddingBottom: 64 }}>
       <Navbar search={search} onSearchChange={setSearch} />
 
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "16px", display: "flex", gap: 24 }}>
-        <div className="lg-sidebar"><Sidebar /></div>
+      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 16px", display: "flex", gap: 24 }}>
+        <div className="lg-sidebar" style={{ width: 140, flexShrink: 0 }}><Sidebar /></div>
 
         <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
           <FeedTabs avatarUrl={avatarUrl} onOpenModal={handleOpenModal} />
 
           {search && (
-            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12 }}>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12, padding: "0 16px" }}>
               Hasil untuk "<strong style={{ color: C.textSecondary }}>{search}</strong>" — {filteredPosts.length} ditemukan
             </p>
           )}
 
-          <div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
             {filteredPosts.length > 0 ? (
               filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
             ) : (
-              <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted }}>
+              <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4 }}>
                 <p style={{ fontSize: 15, fontFamily: FONT }}>Belum ada postingan.</p>
               </div>
             )}
           </div>
         </main>
 
-        <aside style={{ width: 180, flexShrink: 0 }} className="right-sidebar">
-          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: 16, textAlign: "center" }}>
-            <p style={{ fontSize: 15, color: C.textMuted, fontFamily: FONT }}>Ruang iklan</p>
-          </div>
+        <aside style={{ width: 280, flexShrink: 0 }} className="right-sidebar">
+          {/* Sisi kanan diseimbangkan */}
         </aside>
       </div>
 
+      {/* Modal Posting */}
       {isModalOpen && (
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.75)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, width: "100%", maxWidth: 600, display: "flex", flexDirection: "column", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottom: `1px solid ${C.border}` }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <img src={avatarUrl} alt="avatar" style={{ width: 40, height: 40, borderRadius: "50%" }} />
+                <img src={avatarUrl} alt="avatar" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }} />
                 <h2 style={{ fontFamily: FONT, color: C.textPrimary, margin: 0, fontSize: 16, fontWeight: 600 }}>{user.name}</h2>
               </div>
               <button onClick={() => setIsModalOpen(false)} style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: 4 }}>
@@ -305,9 +346,9 @@ export default function Beranda() {
               <button
                 onClick={handleCreatePost}
                 disabled={isSubmitting || !postContent.trim()}
-                style={{ background: isSubmitting || !postContent.trim() ? C.textMuted : C.blue, color: "#fff", border: "none", padding: "8px 20px", borderRadius: 100, fontFamily: FONT, fontWeight: 600, cursor: isSubmitting || !postContent.trim() ? "not-allowed" : "pointer" }}
+                style={{ background: isSubmitting || !postContent.trim() ? "#444" : C.blue, color: isSubmitting || !postContent.trim() ? "#888" : "#fff", border: "none", padding: "8px 20px", borderRadius: 100, fontFamily: FONT, fontWeight: 600, cursor: isSubmitting || !postContent.trim() ? "not-allowed" : "pointer" }}
               >
-                {isSubmitting ? "Mengirim..." : "Kirim"}
+                {isSubmitting ? "Mengirim..." : "Tambah pertanyaan"}
               </button>
             </div>
           </div>
@@ -321,7 +362,7 @@ export default function Beranda() {
           .lg-sidebar { display: block; }
           .right-sidebar { display: block; }
         }
-        input::placeholder { color: #636466; }
+        input::placeholder { color: #87898c; }
       `}</style>
     </div>
   );

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuthStore } from '../stores/auth.store';
-import bgQuora from '../assets/BG QUORA.jpeg';
+import bgQuora from '../assets/bg-quora.jpeg';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -67,26 +67,33 @@ const Login = () => {
       className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat selection:bg-neutral-700"
       style={{ backgroundImage: `url(${bgQuora})` }}
     >
-      <div className="absolute inset-0 bg-black/15 z-0" />
-      <div className="relative z-10 w-full max-w-[714px] bg-[#262626] text-[#b4b4b4] rounded shadow-2xl flex flex-col border border-[#333333] m-4 overflow-hidden">
+      {/* Kecerahan Overlay Diturunkan agar gambar latar lebih terang */}
+      <div className="absolute inset-0 bg-black/25 z-0" />
+      
+      {/* Modal Box */}
+      <div className="relative z-10 w-full max-w-[714px] bg-[#242424] text-[#D5D6D7] rounded-md shadow-2xl flex flex-col border border-[#393939] m-4 overflow-hidden">
 
-        <div className="w-full flex flex-col items-center pt-8 pb-5 text-center px-4">
-          <h1 className="text-[#b92b27] text-[52px] font-black tracking-tight leading-none mb-1">Quora</h1>
-          <p className="text-[#87898c] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
-          <p className="text-[#e2e2e2] text-[17px] font-bold tracking-wide max-w-[600px]">
+        {/* Header */}
+        <div className="w-full flex flex-col items-center pt-10 pb-6 text-center px-4">
+          <h1 className="text-[#b92b27] text-[56px] font-black tracking-tight leading-none mb-1" style={{ fontFamily: 'Georgia, serif' }}>Qoora</h1>
+          <p className="text-[#B1B3B6] text-[13px] font-bold tracking-wide mb-3">Bahasa Indonesia</p>
+          <p className="text-[#E4E6E8] text-[16px] font-bold tracking-wide max-w-[500px]">
             Tempat berbagi pengetahuan dan memahami dunia lebih baik
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row border-t border-[#333333]">
+        {/* Tengah */}
+        <div className="flex flex-col md:flex-row border-t border-[#393939]">
 
-          <div className="w-full md:w-[53%] p-6 md:p-8 flex flex-col items-center justify-start border-b md:border-b-0 md:border-r border-[#333333]">
-            <p className="text-[13px] text-[#87898c] leading-snug font-normal text-left w-full max-w-[280px] mb-6">
+          {/* Kolom Kiri */}
+          <div className="w-full md:w-[50%] p-6 md:p-8 flex flex-col items-center justify-start border-b md:border-b-0 md:border-r border-[#393939]">
+            <p className="text-[13px] text-[#B1B3B6] leading-relaxed font-normal text-left w-full max-w-[280px] mb-6">
               Dengan melanjutkan, Anda menunjukkan bahwa Anda menyetujui{' '}
-              <span className="text-[#2b69d1] cursor-pointer hover:underline">Persyaratan Layanan</span> dan{' '}
-              <span className="text-[#2b69d1] cursor-pointer hover:underline">Kebijakan Privasi</span> Quora.
+              <span className="text-[#3A7AEF] cursor-pointer hover:underline">Persyaratan Layanan</span> dan{' '}
+              <span className="text-[#3A7AEF] cursor-pointer hover:underline">Kebijakan Privasi</span> Qoora.
             </p>
-            <div className="w-full flex flex-col items-center justify-center my-auto">
+            
+            <div className="w-full flex flex-col items-center justify-center space-y-3">
               <div className="flex justify-center w-full max-w-[280px]">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
@@ -97,11 +104,16 @@ const Login = () => {
                   width="280px"
                 />
               </div>
+              
+              <Link to="/register" className="text-[#E4E6E8] hover:bg-[#333333] text-[14px] font-medium py-2 px-4 rounded-full w-full max-w-[280px] text-center transition-colors">
+                Daftar dengan surel
+              </Link>
             </div>
           </div>
 
-          <form onSubmit={handleManualLogin} className="w-full md:w-[47%] p-6 md:p-8 flex flex-col justify-start">
-            <h2 className="text-[#e2e2e2] text-[15px] font-bold border-b border-[#333333] pb-1.5 mb-5">Masuk</h2>
+          {/* Kolom Kanan */}
+          <form onSubmit={handleManualLogin} className="w-full md:w-[50%] p-6 md:p-8 flex flex-col justify-start">
+            <h2 className="text-[#E4E6E8] text-[15px] font-bold border-b border-[#393939] pb-2 mb-5">Masuk</h2>
 
             {errorMessage && (
               <div className="bg-[#b92b27] text-white text-[13px] p-2 rounded mb-4 text-center font-semibold">
@@ -111,46 +123,60 @@ const Login = () => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-[13px] font-bold text-[#e2e2e2] mb-1.5">Surel</label>
+                <label className="block text-[14px] font-bold text-[#E4E6E8] mb-1.5">Surel</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Surel Anda"
-                  className="w-full bg-[#1c1c1c] border border-[#333333] px-3 py-2 text-sm text-white placeholder-[#555555] rounded-sm outline-none focus:border-[#2b69d1] transition-colors"
+                  className="w-full bg-[#181818] border border-[#393939] px-3 py-2 text-[15px] text-[#E4E6E8] placeholder-[#87898c] rounded-sm outline-none focus:border-[#3A7AEF] transition-colors hover:border-[#666666]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-[13px] font-bold text-[#e2e2e2] mb-1.5">Sandi</label>
+                <label className="block text-[14px] font-bold text-[#E4E6E8] mb-1.5">Sandi</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Kata sandi Anda"
-                  className="w-full bg-[#1c1c1c] border border-[#333333] px-3 py-2 text-sm text-white placeholder-[#555555] rounded-sm outline-none focus:border-[#2b69d1] transition-colors"
+                  className="w-full bg-[#181818] border border-[#393939] px-3 py-2 text-[15px] text-[#E4E6E8] placeholder-[#87898c] rounded-sm outline-none focus:border-[#3A7AEF] transition-colors hover:border-[#666666]"
                   required
                 />
               </div>
-              <div className="flex items-center justify-end pt-3">
+              
+              <div className="flex items-center justify-between pt-4">
+                <Link to="#" className="text-[#B1B3B6] hover:underline text-[13px]">
+                  Lupa kata sandi?
+                </Link>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`px-5 py-1.5 rounded-full text-[14px] font-bold transition-colors shadow-sm text-white
-                    ${isLoading ? 'bg-gray-500 cursor-not-allowed' : 'bg-[#2b69d1] hover:bg-[#3277ed]'}`}
+                  className={`px-6 py-2 rounded-full text-[14px] font-bold transition-colors text-white
+                    ${isLoading ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#2E69FF] hover:bg-[#477BFF]'}`}
                 >
                   {isLoading ? 'Memproses...' : 'Masuk'}
-
-                  <p className="text-[13px] text-[#87898c] text-center mt-4">
-                  Belum punya akun?{' '}
-                  <Link to="/register" className="text-[#2b69d1] hover:underline font-bold">Daftar</Link>
-                </p>
                 </button>
               </div>
             </div>
           </form>
 
         </div>
+        
+        {/* Footer */}
+        <div className="w-full bg-[#1e1e1e] border-t border-[#393939] py-4 text-center">
+          <p className="text-[#B1B3B6] text-[13px]">
+            <Link to="#" className="hover:underline">Tentang Kami</Link> ·{' '}
+            <Link to="#" className="hover:underline">Karier</Link> ·{' '}
+            <Link to="#" className="hover:underline">Privasi</Link> ·{' '}
+            <Link to="#" className="hover:underline">Ketentuan</Link> ·{' '}
+            <Link to="#" className="hover:underline">Kontak</Link> ·{' '}
+            <Link to="#" className="hover:underline">Bahasa</Link> ·{' '}
+            <Link to="#" className="hover:underline">Pers</Link> ·{' '}
+            © Qoora, Inc. 2026
+          </p>
+        </div>
+
       </div>
     </div>
   );
