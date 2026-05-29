@@ -1,4 +1,4 @@
-# social-media-app
+# backend
 
 To install dependencies:
 
