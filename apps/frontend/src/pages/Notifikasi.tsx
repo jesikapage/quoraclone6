@@ -133,10 +133,10 @@ export default function Notifikasi() {
       <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
         <div className="max-w-[1200px] mx-auto h-full flex items-center gap-2 px-2 sm:px-4">
           <span
-            className="text-[#b92b27] text-lg sm:text-2xl font-bold tracking-tighter cursor-pointer select-none mr-1 sm:mr-2"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#b92b27', fontSize: 22, fontWeight: 900, cursor: 'pointer', userSelect: 'none', letterSpacing: '-0.5px' }}
             onClick={() => navigate("/")}
           >
-            Quora
+            Qoora
           </span>
 
           <div className="flex-1 max-w-[200px] sm:max-w-[340px]">

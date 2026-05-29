@@ -41,7 +41,12 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
     avatar: null,
   };
 
-  const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`;
+  const initials = user.name
+    .split(' ')
+    .map((w: string) => w[0] || '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || '?';
 
   const handleLogout = () => {
     logout();
@@ -57,8 +62,21 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
     <header style={{ position: "sticky", top: 0, zIndex: 50, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 50 }}>
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 16px", height: "100%", display: "flex", alignItems: "center", gap: 8 }}>
 
-        <Link to="/" style={{ color: C.red, fontWeight: 900, fontSize: 22, textDecoration: "none", letterSpacing: -1, flexShrink: 0, marginRight: 4, fontFamily: FONT }}>
-          Quora
+        <Link
+          to="/"
+          style={{
+            color: "#b92b27",
+            fontWeight: 900,
+            fontSize: 26,
+            textDecoration: "none",
+            letterSpacing: "-0.5px",
+            flexShrink: 0,
+            marginRight: 4,
+            fontFamily: "Georgia, 'Times New Roman', serif",
+            lineHeight: 1,
+          }}
+        >
+          Qoora
         </Link>
 
         <nav style={{ display: "flex", alignItems: "center", height: 50 }}>
@@ -104,12 +122,31 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
-          <img
-            src={avatarUrl}
-            alt="avatar"
+          {/* Avatar: foto jika ada, inisial jika tidak — konsisten dengan halaman profil */}
+          <div
             onClick={() => navigate("/profile/edit")}
-            style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${C.border}`, cursor: "pointer" }}
-          />
+            style={{
+              width: 32, height: 32, borderRadius: '50%',
+              border: `1px solid ${C.border}`, cursor: 'pointer',
+              overflow: 'hidden', flexShrink: 0, background: '#3A7AEF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt="avatar"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            ) : (
+              <span style={{
+                fontSize: 12, fontWeight: 800, color: '#fff',
+                fontFamily: FONT, lineHeight: 1, userSelect: 'none',
+              }}>
+                {initials}
+              </span>
+            )}
+          </div>
           <span style={{ fontFamily: FONT, fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>
             {user.name}
           </span>

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
 import Navbar from '../components/Navbar';
@@ -124,6 +124,11 @@ const EditProfile = () => {
   const [avatarOffsetX, setAvatarOffsetX] = useState(0);
   const [avatarOffsetY, setAvatarOffsetY] = useState(0);
 
+  // Sinkron preview dengan store (misal: dibuka ulang setelah simpan)
+  useEffect(() => {
+    setAvatarPreview(user?.avatar || null);
+  }, [user?.avatar]);
+
   const [currPass, setCurrPass] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confPass, setConfPass] = useState('');
@@ -150,9 +155,12 @@ const EditProfile = () => {
     if (file.size > 5 * 1024 * 1024) { showAlertMsg('error', 'Ukuran file maksimal 5MB.'); return; }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setAvatarPreview(ev.target?.result as string);
+      const dataUrl = ev.target?.result as string;
+      setAvatarPreview(dataUrl);
       setAvatarOffsetX(0);
       setAvatarOffsetY(0);
+      // Update Navbar & semua komponen secara langsung (live)
+      if (user && token) setAuth({ ...user, avatar: dataUrl }, token);
     };
     reader.readAsDataURL(file);
   }
@@ -162,6 +170,8 @@ const EditProfile = () => {
     setAvatarOffsetX(0);
     setAvatarOffsetY(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
+    // Kembalikan avatar ke null di store → Navbar tampilkan inisial
+    if (user && token) setAuth({ ...user, avatar: null }, token);
   }
 
   function getStrength(val: string) {

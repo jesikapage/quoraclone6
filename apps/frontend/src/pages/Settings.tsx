@@ -41,10 +41,10 @@ const Settings = () => {
       <nav className="h-[50px] bg-white border-b border-[#dee0e1] sticky top-0 z-30 shadow-sm">
         <div className="max-w-[1200px] mx-auto h-full flex items-center gap-3 px-3 sm:px-4">
           <span
-            className="text-[#b92b27] text-xl sm:text-2xl font-bold tracking-tighter cursor-pointer select-none"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: '#b92b27', fontSize: 22, fontWeight: 900, cursor: 'pointer', userSelect: 'none', letterSpacing: '-0.5px' }}
             onClick={() => navigate('/')}
           >
-            Quora
+            Qoora
           </span>
           <div className="flex-1" />
           <nav className="hidden sm:flex gap-1 items-center text-xs sm:text-sm">
