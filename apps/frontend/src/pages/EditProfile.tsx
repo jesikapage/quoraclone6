@@ -245,7 +245,7 @@ const EditProfile = () => {
       {/* Navbar sama dengan Beranda */}
       <Navbar search={search} onSearchChange={setSearch} />
 
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 16px', display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 12px', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
         {/* ── Sidebar kiri ── */}
         <aside className="ep-sidebar" style={{ width: 220, flexShrink: 0 }}>
@@ -513,8 +513,13 @@ const EditProfile = () => {
 
       <style>{`
         .ep-sidebar { display: block; }
-        @media (max-width: 640px) { .ep-sidebar { display: none; } }
+        @media (max-width: 640px) {
+          .ep-sidebar { display: none; }
+        }
         .ep-avatar-overlay:hover { opacity: 1 !important; }
+        @media (hover: none) {
+          .ep-avatar-overlay { opacity: 0.6 !important; }
+        }
       `}</style>
     </div>
   );

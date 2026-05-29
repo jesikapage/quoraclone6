@@ -404,10 +404,10 @@ export default function Beranda() {
     <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, fontSize: 15, paddingBottom: 64 }}>
       <Navbar search={search} onSearchChange={setSearch} />
 
-      <div style={{ maxWidth: 1040, margin: "0 auto", padding: "24px 16px", display: "flex", gap: 24 }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "16px 12px", display: "flex", gap: 20 }}>
         <div className="lg-sidebar" style={{ width: 140, flexShrink: 0 }}><Sidebar /></div>
 
-        <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
+        <main style={{ flex: 1, minWidth: 0, maxWidth: 600 }}>
           <FeedTabs avatarUrl={avatarUrl} onOpenModal={handleOpenModal} />
 
           {search && (
@@ -484,6 +484,10 @@ export default function Beranda() {
           .right-sidebar { display: block; }
         }
         input::placeholder { color: #87898c; }
+        textarea::placeholder { color: #87898c; }
+        @media (max-width: 640px) {
+          .feed-card { border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+        }
       `}</style>
     </div>
   );

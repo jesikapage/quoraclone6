@@ -735,11 +735,11 @@ export default function Notifications() {
       {/* Page Layout */}
       <div
         style={{
-          maxWidth: 1000,
+          maxWidth: 1280,
           margin: "0 auto",
-          padding: "24px 16px",
+          padding: "16px 12px",
           display: "flex",
-          gap: 32,
+          gap: 24,
           alignItems: "flex-start",
         }}
       >
