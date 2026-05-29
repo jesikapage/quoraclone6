@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
-import bgQuora from '../assets/BG QUORA.jpeg';
+import bgQuora from '../assets/bg-quora.jpeg';
 
 const Register = () => {
   const navigate = useNavigate();

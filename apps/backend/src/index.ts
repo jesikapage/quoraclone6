@@ -15,10 +15,17 @@ const app = new Elysia()
   .use(likeRoutes)
   .use(notificationRoutes)
   .use(userRoutes)
-  .get("/", () => ({ message: "API is running!" }))
-  .listen(process.env.PORT ?? 3000);
+  .get("/", () => ({ message: "API is running!" }));
 
-console.log(`Server running at http://localhost:${app.server?.port}`);
+// --- MODIFIKASI LOKAL ---
+// Blok ini hanya akan berjalan di laptop Anda, dan akan diabaikan oleh AWS Lambda
+// (Pastikan di AWS Lambda nanti, environment variable NODE_ENV diatur ke "production")
+if (process.env.NODE_ENV !== "production") {
+  app.listen(3000, () => {
+    console.log("🦊 Server lokal Quora Clone menyala di http://localhost:3000");
+  });
+}
+// ------------------------
 
 export type App = typeof app;
 
