@@ -80,7 +80,7 @@ function SearchBar({ search, onSearchChange }: { search: string; onSearchChange:
   const showDropdown = open && (query.length > 0 || focused);
 
   return (
-    <div ref={wrapRef} style={{ flex: 1, maxWidth: 280, position: "relative", marginLeft: 8 }}>
+    <div ref={wrapRef} style={{ flex: 1, maxWidth: 420, minWidth: 180, position: "relative", marginLeft: 8 }}>
       {/* Input */}
       <Search
         size={13}
@@ -232,8 +232,8 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
   const handleNavClick = (to: string) => { setActiveNav(to); navigate(to); };
 
   return (
-    <header style={{ position: "sticky", top: 0, zIndex: 50, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 50 }}>
-      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 16px", height: "100%", display: "flex", alignItems: "center", gap: 8 }}>
+    <header style={{ position: "sticky", top: 0, zIndex: 50, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 56 }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 24px", height: "100%", display: "flex", alignItems: "center", gap: 12 }}>
 
         {/* Logo */}
         <Link
