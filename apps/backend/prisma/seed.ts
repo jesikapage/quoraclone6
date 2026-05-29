@@ -1,7 +1,6 @@
 import { AuthProvider } from "../src/generated/prisma/client";
 import { prisma } from "./db";
-
-import { hash } from "bcrypt";
+import { password } from "bun";
 
 async function main() {
   console.log("🌱 Seeding database...");
@@ -20,7 +19,10 @@ async function main() {
   // ─────────────────────────────────────────
   // USERS
   // ─────────────────────────────────────────
-  const passwordHash = await hash("password123", 10);
+  const passwordHash = await password.hash("password123", {
+    algorithm: "bcrypt",
+    cost: 10,
+  });
 
   const users = await Promise.all([
     prisma.user.create({
