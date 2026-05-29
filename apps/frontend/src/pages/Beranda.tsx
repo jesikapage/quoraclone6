@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
 import { Link, useNavigate } from "react-router-dom";
-import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X, HelpCircle, PenLine, Send } from "lucide-react";
+// Menambahkan icon Edit2 dan Trash2 dari lucide-react
+import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X, HelpCircle, PenLine, Send, Edit2, Trash2 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
@@ -44,11 +45,21 @@ function timeAgo(dateStr: string) {
   return "1bln";
 }
 
-function PostCard({ post }: { post: Post }) {
+// Menambahkan prop currentUser dan fetchPosts
+function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: any; fetchPosts: () => void }) {
   const { token } = useAuthStore();
   const navigate = useNavigate();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
+
+  // STATE BARU UNTUK EDIT & DELETE
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Cek apakah user yang sedang login adalah pemilik postingan
+  const isOwner = currentUser?.id === post.user.id;
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Mencegah pemicu klik navigasi halaman detail
@@ -66,20 +77,72 @@ function PostCard({ post }: { post: Post }) {
     }
   };
 
+  // FUNGSI HAPUS POSTINGAN
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("Yakin ingin menghapus postingan ini?")) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts/${post.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        fetchPosts(); 
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal menghapus postingan.");
+      }
+    } catch {
+      alert("Koneksi gagal saat menghapus.");
+    }
+  };
+
+  // FUNGSI UPDATE POSTINGAN
+  const handleUpdate = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!editContent.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts/${post.id}`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ content: editContent }),
+      });
+      if (res.ok) {
+        setIsEditing(false);
+        setShowMenu(false);
+        fetchPosts(); 
+      } else {
+        const data = await res.json();
+        alert(data.error || "Gagal memperbarui.");
+      }
+    } catch {
+      alert("Koneksi gagal saat memperbarui.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <article 
-      onClick={() => navigate(`/posts/${post.id}`)}
+      onClick={() => {
+        // Jangan navigasi jika sedang dalam mode edit
+        if (!isEditing) navigate(`/posts/${post.id}`);
+      }}
       style={{ 
         background: C.surface, 
         border: `1px solid ${C.border}`, 
         marginBottom: "8px", 
         borderRadius: "4px", 
         padding: "12px 16px",
-        cursor: "pointer",
+        cursor: isEditing ? "default" : "pointer",
         transition: "background 0.2s"
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = C.surfaceHover; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = C.surface; }}
+      onMouseEnter={(e) => { if (!isEditing) (e.currentTarget as HTMLElement).style.background = C.surfaceHover; }}
+      onMouseLeave={(e) => { if (!isEditing) (e.currentTarget as HTMLElement).style.background = C.surface; }}
     >
       {/* Header Postingan */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
@@ -106,29 +169,85 @@ function PostCard({ post }: { post: Post }) {
             </p>
           </div>
         </div>
-        <button 
-          onClick={(e) => { e.stopPropagation(); }}
-          style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: "4px" }}
-        >
-          <X size={18} />
-        </button>
+        
+        {/* LOGIKA DROPDOWN MENU HANYA UNTUK PEMILIK */}
+        {isOwner ? (
+          <div style={{ position: "relative" }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }} 
+              style={{ background: "transparent", border: "none", color: C.textSecondary, cursor: "pointer", padding: "4px" }}
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            
+            {showMenu && (
+              <div style={{ position: "absolute", right: 0, top: 24, background: "#1c1c1c", border: `1px solid ${C.border}`, borderRadius: 4, padding: "4px", zIndex: 10, width: "120px", boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsEditing(true); setShowMenu(false); }} 
+                  style={{ width: "100%", textAlign: "left", padding: "8px 12px", background: "transparent", border: "none", color: C.textPrimary, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontFamily: FONT }}
+                >
+                  <Edit2 size={14} /> Ubah
+                </button>
+                <button 
+                  onClick={handleDelete} 
+                  style={{ width: "100%", textAlign: "left", padding: "8px 12px", background: "transparent", border: "none", color: C.red, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontFamily: FONT }}
+                >
+                  <Trash2 size={14} /> Hapus
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button 
+            onClick={(e) => { e.stopPropagation(); }}
+            style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: "4px" }}
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
-      {/* Konten Postingan Asli */}
-      <p style={{ 
-        fontFamily: FONT, 
-        fontSize: 15, 
-        color: C.textPrimary, 
-        lineHeight: 1.6, 
-        margin: "8px 0 12px 0", 
-        whiteSpace: "pre-wrap",
-        display: "-webkit-box", 
-        WebkitLineClamp: 4, 
-        WebkitBoxOrient: "vertical", 
-        overflow: "hidden" 
-      }}>
-        {post.content}
-      </p>
+      {/* LOGIKA INLINE EDITING ATAU TAMPILAN NORMAL */}
+      {isEditing ? (
+        <div style={{ marginBottom: 12 }} onClick={(e) => e.stopPropagation()}>
+          <textarea
+            autoFocus
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            style={{ width: "100%", minHeight: 80, background: "#181818", border: `1px solid ${C.blue}`, outline: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 15, padding: "8px 12px", borderRadius: 4, resize: "vertical" }}
+          />
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsEditing(false); setEditContent(post.content); }} 
+              style={{ background: "transparent", color: C.textSecondary, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+            >
+              Batal
+            </button>
+            <button 
+              onClick={handleUpdate} 
+              disabled={isSubmitting || editContent === post.content || !editContent.trim()} 
+              style={{ background: C.blue, color: "#fff", border: "none", padding: "6px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, cursor: isSubmitting || editContent === post.content || !editContent.trim() ? "not-allowed" : "pointer", opacity: isSubmitting || editContent === post.content || !editContent.trim() ? 0.5 : 1 }}
+            >
+              {isSubmitting ? "Menyimpan..." : "Simpan"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p style={{ 
+          fontFamily: FONT, 
+          fontSize: 15, 
+          color: C.textPrimary, 
+          lineHeight: 1.6, 
+          margin: "8px 0 12px 0", 
+          whiteSpace: "pre-wrap",
+          display: "-webkit-box", 
+          WebkitLineClamp: 4, 
+          WebkitBoxOrient: "vertical", 
+          overflow: "hidden" 
+        }}>
+          {post.content}
+        </p>
+      )}
 
       {post.imageUrl && (
         <img src={post.imageUrl} alt="post" style={{ width: "100%", maxHeight: 400, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
@@ -168,7 +287,8 @@ function PostCard({ post }: { post: Post }) {
           onClick={(e) => e.stopPropagation()}
           style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px" }}
         >
-          <MoreHorizontal size={18} />
+          {/* Ikon MoreHorizontal default disembunyikan untuk owner, karena owner pakai menu dropdown di header */}
+          {!isOwner && <MoreHorizontal size={18} />}
         </button>
       </div>
     </article>
@@ -298,7 +418,8 @@ export default function Beranda() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
             {filteredPosts.length > 0 ? (
-              filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+              // Mengoper currentUser dan fetchPosts ke PostCard
+              filteredPosts.map((post) => <PostCard key={post.id} post={post} currentUser={user} fetchPosts={fetchPosts} />)
             ) : (
               <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted, background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4 }}>
                 <p style={{ fontSize: 15, fontFamily: FONT }}>Belum ada postingan.</p>
