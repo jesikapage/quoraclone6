@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { to: "/mengikuti",  icon: BookOpen, label: "Mengikuti" },
   { to: "/jawab",      icon: PenLine,  label: "Jawab" },
   { to: "/ruang",      icon: Rocket,   label: "Ruang" },
-  { to: "/notifications", icon: Bell, label: "Notifikasi" },
+  { to: "/notifikasi", icon: Bell, label: "Notifikasi" },
 ];
 
 interface NavbarProps {
