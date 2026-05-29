@@ -1,15 +1,19 @@
-# social-media-app
+🚀 Qoora Clone
+Proyek Tugas Besar - Aplikasi Berbagi Pengetahuan
 
-To install dependencies:
+Selamat datang di repositori proyek Qoora, sebuah platform Q&A yang dirancang untuk berbagi pengetahuan dengan antarmuka yang modern, responsif, dan performa tinggi menggunakan runtime Bun.
 
-```bash
-bun install
-```
+🛠️ Tech Stack
+Runtime: Bun (v1.3.8)
+Backend: ElysiaJS (Framework Web)
+Frontend: React (Vite)
+Database: Neon PostgreSQL (Prisma ORM)
+Cloud: AWS Lambda (Backend Serverless) & AWS CloudFront (Frontend Hosting)
 
-To run:
+🌐 Live Demo
+Backend API: Klik di sini
+Frontend App: Klik di sini
 
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.3.8. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+📂 Dokumentasi & Media
+📄 Laporan Tugas Besar (Google Docs)
+🎥 Video Presentasi Kelompok (Google Drive)
