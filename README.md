@@ -24,9 +24,3 @@ Selamat datang di repositori proyek **Qoora**. Aplikasi ini dirancang sebagai pl
 * 📄 **[Laporan Tugas Besar](https://docs.google.com/document/d/1YCzmtTmqRLJ8lRU5hObdL0xYjAeRoccdNKufT_7xYMc/edit?tab=t.0)**
 * 🎥 **[Video Presentasi Kelompok](https://drive.google.com/drive/folders/1KXL5mWU-ifMgWVC3lFFq4cGxGZenGUdT)**
 
----
-
-## 🚀 Cara Menjalankan Lokal
-1. **Clone repositori:**
-   ```bash
-   git clone [https://github.com/jesikapage/quoraclone6.git](https://github.com/jesikapage/quoraclone6.git)
