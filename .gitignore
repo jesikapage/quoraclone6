@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-node_modules
-=======
-# dependencies (bun install)
+# dependencies
 node_modules
 
 # output
@@ -15,11 +12,12 @@ coverage
 
 # logs
 logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+*.log
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
-# dotenv environment variable files
+# dotenv environment variable files — NEVER commit secrets
 .env
+.env.*
 .env.development.local
 .env.test.local
 .env.production.local
@@ -29,10 +27,13 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .eslintcache
 .cache
 *.tsbuildinfo
+.vite
 
 # IntelliJ based IDEs
 .idea
 
 # Finder (MacOS) folder config
 .DS_Store
->>>>>>> 9f3fbd90285a761db25ca98548d38e30be9c94b6
+
+# Prisma generated
+apps/backend/prisma/generated
