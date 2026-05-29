@@ -1,5 +1,5 @@
 import { useAuthStore } from "../stores/auth.store";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   Home, BookOpen, PenLine, Rocket, Bell,
   Search, ChevronDown, Globe, Plus, X, Menu,
@@ -192,15 +192,22 @@ interface NavbarProps {
 export default function Navbar({ search, onSearchChange }: NavbarProps) {
   const { user: authUser, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState("/");
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const user = authUser ?? { name: "Guest", avatar: null };
   const initials = user.name.split(" ").map((w: string) => w[0] || "").slice(0, 2).join("").toUpperCase() || "?";
 
+  // Tentukan nav aktif berdasarkan URL saat ini
+  const activeNav = NAV_ITEMS.find(item =>
+    item.to === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(item.to)
+  )?.to ?? "/";
+
   const handleLogout = () => { logout(); navigate("/login"); setMobileMenuOpen(false); };
-  const handleNavClick = (to: string) => { setActiveNav(to); navigate(to); setMobileMenuOpen(false); };
+  const handleNavClick = (to: string) => { navigate(to); setMobileMenuOpen(false); };
 
   return (
     <>
