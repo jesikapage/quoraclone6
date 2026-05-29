@@ -22,6 +22,7 @@ const EditProfile = () => {
 
   const [activeTab, setActiveTab] = useState<'profile' | 'account'>('profile');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fullName = `${firstName} ${lastName}`.trim() || 'Nama Kamu';
@@ -87,37 +88,60 @@ const EditProfile = () => {
   return (
     <div className="min-h-screen bg-[#f7f7f8] font-sans text-[#282829]">
 
-      {/* Navbar — sama persis seperti Beranda */}
+      {/* Navbar — Mobile-responsive version */}
       <nav className="h-[50px] bg-white border-b border-[#dee0e1] sticky top-0 z-30 shadow-sm">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-3 px-4">
+        <div className="max-w-[1200px] mx-auto h-full flex items-center gap-3 px-3 sm:px-4">
           <span
-            className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none"
+            className="text-[#b92b27] text-xl sm:text-2xl font-bold tracking-tighter cursor-pointer select-none"
             onClick={() => navigate('/')}
           >
             Quora
           </span>
           <div className="flex-1" />
-          <nav className="flex gap-1 items-center text-sm">
-            <Link to="/" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-1.5 rounded-[3px] transition">Beranda</Link>
-            <Link to="/notifikasi" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-1.5 rounded-[3px] transition">Notifikasi</Link>
-            <Link to="/profile/edit" className="text-[#282829] font-semibold bg-[#f1f2f2] px-3 py-1.5 rounded-[3px]">Profil</Link>
+          <nav className="hidden sm:flex gap-1 items-center text-xs sm:text-sm">
+            <Link to="/" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-2 sm:px-3 py-1.5 rounded-[3px] transition">Beranda</Link>
+            <Link to="/notifikasi" className="text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-2 sm:px-3 py-1.5 rounded-[3px] transition">Notifikasi</Link>
+            <Link to="/profile/edit" className="text-[#282829] font-semibold bg-[#f1f2f2] px-2 sm:px-3 py-1.5 rounded-[3px]">Profil</Link>
             <button
               onClick={() => { logout(); navigate('/login'); }}
-              className="text-[#b92b27] hover:bg-[#fff0f0] px-3 py-1.5 rounded-[3px] transition"
+              className="text-[#b92b27] hover:bg-[#fff0f0] px-2 sm:px-3 py-1.5 rounded-[3px] transition"
             >
               Keluar
             </button>
           </nav>
+          
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="sm:hidden text-[#636466] hover:text-[#282829] p-2"
+          >
+            ☰
+          </button>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {showMobileMenu && (
+          <div className="sm:hidden bg-white border-t border-[#dee0e1] py-2 px-3 space-y-1">
+            <Link to="/" className="block text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-2 rounded-[3px] transition text-sm">Beranda</Link>
+            <Link to="/notifikasi" className="block text-[#636466] hover:bg-[#f1f2f2] hover:text-[#282829] px-3 py-2 rounded-[3px] transition text-sm">Notifikasi</Link>
+            <Link to="/profile/edit" className="block text-[#282829] font-semibold bg-[#f1f2f2] px-3 py-2 rounded-[3px] text-sm">Profil</Link>
+            <button
+              onClick={() => { logout(); navigate('/login'); setShowMobileMenu(false); }}
+              className="block w-full text-left text-[#b92b27] hover:bg-[#fff0f0] px-3 py-2 rounded-[3px] transition text-sm"
+            >
+              Keluar
+            </button>
+          </div>
+        )}
       </nav>
 
-      <div className="max-w-[1000px] mx-auto px-4 py-6 flex gap-5">
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 py-4 sm:py-6 flex flex-col sm:flex-row gap-4 sm:gap-5">
 
-        {/* ── Sidebar kiri: navigasi pengaturan ── */}
-        <aside className="w-[220px] flex-shrink-0 hidden md:block">
+        {/* Sidebar kiri: navigasi pengaturan (responsive) */}
+        <aside className="w-full sm:w-[220px] flex-shrink-0">
           <div className="bg-white border border-[#dee0e1] rounded-[3px] overflow-hidden">
             {/* Mini profile */}
-            <div className="p-4 border-b border-[#dee0e1] flex items-center gap-3">
+            <div className="p-3 sm:p-4 border-b border-[#dee0e1] flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#2b69d1] flex items-center justify-center overflow-hidden flex-shrink-0">
                 {avatarPreview
                   ? <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
@@ -125,57 +149,59 @@ const EditProfile = () => {
                 }
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-bold text-[#282829] truncate">{fullName}</p>
-                <p className="text-[11px] text-[#636466] truncate">{credential || 'Tambah kredensial'}</p>
+                <p className="text-xs sm:text-sm font-bold text-[#282829] truncate">{fullName}</p>
+                <p className="text-[10px] sm:text-[11px] text-[#636466] truncate">{credential || 'Tambah kredensial'}</p>
               </div>
             </div>
             {/* Menu */}
-            {[
-              { key: 'profile', label: 'Edit Profil', icon: '👤' },
-              { key: 'account', label: 'Keamanan Akun', icon: '🔒' },
-            ].map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setActiveTab(item.key as 'profile' | 'account')}
-                className={`w-full text-left flex items-center gap-3 px-4 py-2.5 text-[13px] transition ${
-                  activeTab === item.key
-                    ? 'bg-[#ebf0ff] text-[#2b69d1] font-semibold border-r-2 border-[#2b69d1]'
-                    : 'text-[#282829] hover:bg-[#f1f2f2]'
-                }`}
-              >
-                <span>{item.icon}</span>{item.label}
-              </button>
-            ))}
+            <div className="flex sm:flex-col gap-0">
+              {[
+                { key: 'profile', label: 'Edit Profil', icon: '👤' },
+                { key: 'account', label: 'Keamanan Akun', icon: '🔒' },
+              ].map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => { setActiveTab(item.key as 'profile' | 'account'); setShowMobileMenu(false); }}
+                  className={`flex-1 sm:w-full text-center sm:text-left flex sm:flex items-center gap-3 px-2 sm:px-4 py-2.5 text-[11px] sm:text-[13px] transition ${
+                    activeTab === item.key
+                      ? 'bg-[#ebf0ff] text-[#2b69d1] font-semibold border-r-2 border-[#2b69d1] sm:border-r-2 border-b-2 sm:border-b-0'
+                      : 'text-[#282829] hover:bg-[#f1f2f2]'
+                  }`}
+                >
+                  <span className="text-base">{item.icon}</span><span className="hidden sm:inline">{item.label}</span><span className="inline sm:hidden text-xs">{item.label.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </aside>
 
-        {/* ── Konten utama ── */}
-        <div className="flex-1 min-w-0 max-w-[700px] space-y-4">
+        {/* ── Konten utama (responsive) ── */}
+        <div className="flex-1 min-w-0 max-w-full sm:max-w-[700px] space-y-4">
 
           {/* Alert */}
           {alert && (
-            <div className={`flex items-center gap-2 px-4 py-3 rounded-[3px] text-sm border ${
+            <div className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-[3px] text-xs sm:text-sm border animate-fadeIn ${
               alert.type === 'success'
                 ? 'bg-[#e6f7f2] border-[#1D9E75] text-[#0F6E56]'
                 : 'bg-[#fff0f0] border-[#b92b27] text-[#b92b27]'
             }`}>
               <span>{alert.type === 'success' ? '✓' : '✗'}</span>
-              {alert.msg}
+              <span>{alert.msg}</span>
             </div>
           )}
 
           {/* ── TAB: Edit Profil ── */}
           {activeTab === 'profile' && (
             <div className="bg-white border border-[#dee0e1] rounded-[3px]">
-              <div className="px-6 py-4 border-b border-[#dee0e1]">
-                <h2 className="text-[15px] font-bold text-[#282829]">Edit Profil</h2>
-                <p className="text-[13px] text-[#636466] mt-0.5">Informasi ini terlihat publik di profil kamu.</p>
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#dee0e1]">
+                <h2 className="text-[14px] sm:text-[15px] font-bold text-[#282829]">Edit Profil</h2>
+                <p className="text-[12px] sm:text-[13px] text-[#636466] mt-0.5">Informasi ini terlihat publik di profil kamu.</p>
               </div>
 
-              <form onSubmit={handleSaveProfile} className="px-6 py-5">
+              <form onSubmit={handleSaveProfile} className="px-3 sm:px-6 py-4 sm:py-5">
 
-                {/* Avatar section — persis Quora */}
-                <div className="flex items-center gap-5 mb-6 pb-6 border-b border-[#dee0e1]">
+                {/* Avatar section — mobile friendly */}
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-5 mb-6 pb-6 border-b border-[#dee0e1]">
                   <div
                     className="relative w-20 h-20 group cursor-pointer flex-shrink-0"
                     onClick={() => fileInputRef.current?.click()}
@@ -193,33 +219,33 @@ const EditProfile = () => {
 
                   <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleAvatarChange} />
 
-                  <div>
-                    <p className="font-bold text-[15px] text-[#282829]">{fullName}</p>
-                    <p className="text-[12px] text-[#636466] mt-0.5">{credential || 'Tambahkan kredensial...'}</p>
-                    <div className="flex gap-2 mt-3">
+                  <div className="text-center sm:text-left flex-1">
+                    <p className="font-bold text-[14px] sm:text-[15px] text-[#282829]">{fullName}</p>
+                    <p className="text-[11px] sm:text-[12px] text-[#636466] mt-0.5">{credential || 'Tambahkan kredensial...'}</p>
+                    <div className="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-[13px] font-semibold text-[#2b69d1] border border-[#2b69d1] hover:bg-[#ebf0ff] px-3 py-1.5 rounded-[3px] transition"
+                        className="text-[12px] sm:text-[13px] font-semibold text-[#2b69d1] border border-[#2b69d1] hover:bg-[#ebf0ff] px-3 py-1.5 rounded-[3px] transition"
                       >
-                        Upload Foto Profil
+                        Upload Foto
                       </button>
                       {avatarPreview && (
                         <button
                           type="button"
                           onClick={removeAvatar}
-                          className="text-[13px] font-semibold text-[#636466] border border-[#dee0e1] hover:border-[#b92b27] hover:text-[#b92b27] px-3 py-1.5 rounded-[3px] transition"
+                          className="text-[12px] sm:text-[13px] font-semibold text-[#636466] border border-[#dee0e1] hover:border-[#b92b27] hover:text-[#b92b27] px-3 py-1.5 rounded-[3px] transition"
                         >
                           Hapus
                         </button>
                       )}
                     </div>
-                    <p className="text-[11px] text-[#939598] mt-2">JPG, PNG atau GIF. Maks 5MB.</p>
+                    <p className="text-[10px] sm:text-[11px] text-[#939598] mt-2">JPG, PNG atau GIF. Maks 5MB.</p>
                   </div>
                 </div>
 
-                {/* Form fields */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* Form fields — responsive grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                   <div>
                     <label className={labelClass}>Nama Depan <span className="text-[#b92b27]">*</span></label>
                     <input
@@ -227,7 +253,7 @@ const EditProfile = () => {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Nama depan"
-                      className={inputClass}
+                      className={`${inputClass} text-[13px]`}
                     />
                   </div>
                   <div>
@@ -237,7 +263,7 @@ const EditProfile = () => {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Nama belakang"
-                      className={inputClass}
+                      className={`${inputClass} text-[13px]`}
                     />
                   </div>
                 </div>
@@ -250,11 +276,11 @@ const EditProfile = () => {
                     onChange={(e) => setCredential(e.target.value)}
                     placeholder="Contoh: Mahasiswa Informatika UNTAN"
                     maxLength={60}
-                    className={inputClass}
+                    className={`${inputClass} text-[13px]`}
                   />
-                  <div className="flex justify-between mt-1">
-                    <p className="text-[11px] text-[#939598]">Tampil di bawah nama di setiap postingan.</p>
-                    <p className="text-[11px] text-[#939598]">{credential.length}/60</p>
+                  <div className="flex flex-col sm:flex-row justify-between mt-1 gap-1">
+                    <p className="text-[10px] sm:text-[11px] text-[#939598]">Tampil di bawah nama di setiap postingan.</p>
+                    <p className="text-[10px] sm:text-[11px] text-[#939598]">{credential.length}/60</p>
                   </div>
                 </div>
 
@@ -265,21 +291,21 @@ const EditProfile = () => {
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Ceritakan tentang dirimu, minat, atau keahlianmu..."
                     rows={4}
-                    className={`${inputClass} resize-y`}
+                    className={`${inputClass} resize-y text-[13px]`}
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#dee0e1]">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-[#dee0e1]">
                   <button
                     type="button"
                     onClick={() => navigate('/')}
-                    className="border border-[#dee0e1] text-[#636466] hover:text-[#282829] hover:border-[#939598] text-sm font-semibold px-5 py-2 rounded-full transition"
+                    className="border border-[#dee0e1] text-[#636466] hover:text-[#282829] hover:border-[#939598] text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition"
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
-                    className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-sm font-bold px-6 py-2 rounded-full transition"
+                    className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-xs sm:text-sm font-bold px-4 sm:px-6 py-2 rounded-full transition"
                   >
                     Simpan Perubahan
                   </button>
@@ -291,12 +317,12 @@ const EditProfile = () => {
           {/* ── TAB: Keamanan Akun / Ganti Password ── */}
           {activeTab === 'account' && (
             <div className="bg-white border border-[#dee0e1] rounded-[3px]">
-              <div className="px-6 py-4 border-b border-[#dee0e1]">
-                <h2 className="text-[15px] font-bold text-[#282829]">Keamanan Akun</h2>
-                <p className="text-[13px] text-[#636466] mt-0.5">Pastikan akun kamu aman dengan password yang kuat dan unik.</p>
+              <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-[#dee0e1]">
+                <h2 className="text-[14px] sm:text-[15px] font-bold text-[#282829]">Keamanan Akun</h2>
+                <p className="text-[12px] sm:text-[13px] text-[#636466] mt-0.5">Pastikan akun kamu aman dengan password yang kuat dan unik.</p>
               </div>
 
-              <form onSubmit={handleSavePassword} className="px-6 py-5">
+              <form onSubmit={handleSavePassword} className="px-3 sm:px-6 py-4 sm:py-5">
 
                 {/* Password saat ini */}
                 <div className="mb-5">
@@ -307,12 +333,12 @@ const EditProfile = () => {
                       value={currPass}
                       onChange={(e) => setCurrPass(e.target.value)}
                       placeholder="Masukkan password saat ini"
-                      className={`${inputClass} pr-24`}
+                      className={`${inputClass} pr-20 sm:pr-24 text-[13px]`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurr(!showCurr)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] text-[#2b69d1] font-semibold hover:underline whitespace-nowrap"
                     >
                       {showCurr ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
@@ -330,12 +356,12 @@ const EditProfile = () => {
                       value={newPass}
                       onChange={(e) => setNewPass(e.target.value)}
                       placeholder="Minimal 8 karakter"
-                      className={`${inputClass} pr-24`}
+                      className={`${inputClass} pr-20 sm:pr-24 text-[13px]`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowNew(!showNew)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] text-[#2b69d1] font-semibold hover:underline whitespace-nowrap"
                     >
                       {showNew ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
@@ -353,7 +379,7 @@ const EditProfile = () => {
                           />
                         ))}
                       </div>
-                      <p className="text-[11px] mt-1 font-semibold" style={{ color: strength.color }}>{strength.label}</p>
+                      <p className="text-[10px] sm:text-[11px] mt-1 font-semibold" style={{ color: strength.color }}>{strength.label}</p>
                     </div>
                   )}
                 </div>
@@ -367,34 +393,34 @@ const EditProfile = () => {
                       value={confPass}
                       onChange={(e) => setConfPass(e.target.value)}
                       placeholder="Ulangi password baru"
-                      className={`${inputClass} pr-24`}
+                      className={`${inputClass} pr-20 sm:pr-24 text-[13px]`}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConf(!showConf)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[#2b69d1] font-semibold hover:underline"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] sm:text-[12px] text-[#2b69d1] font-semibold hover:underline whitespace-nowrap"
                     >
                       {showConf ? 'Sembunyikan' : 'Tampilkan'}
                     </button>
                   </div>
                   {confPass && (
-                    <p className="text-[11px] mt-1 font-semibold" style={{ color: newPass === confPass ? '#1D9E75' : '#b92b27' }}>
+                    <p className="text-[10px] sm:text-[11px] mt-1 font-semibold" style={{ color: newPass === confPass ? '#1D9E75' : '#b92b27' }}>
                       {newPass === confPass ? '✓ Password cocok' : '✗ Password tidak cocok'}
                     </p>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#dee0e1]">
+                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t border-[#dee0e1]">
                   <button
                     type="button"
                     onClick={() => { setCurrPass(''); setNewPass(''); setConfPass(''); }}
-                    className="border border-[#dee0e1] text-[#636466] hover:text-[#282829] hover:border-[#939598] text-sm font-semibold px-5 py-2 rounded-full transition"
+                    className="border border-[#dee0e1] text-[#636466] hover:text-[#282829] hover:border-[#939598] text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-full transition"
                   >
                     Reset
                   </button>
                   <button
                     type="submit"
-                    className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-sm font-bold px-6 py-2 rounded-full transition"
+                    className="bg-[#2b69d1] hover:bg-[#1c5bbf] text-white text-xs sm:text-sm font-bold px-4 sm:px-6 py-2 rounded-full transition"
                   >
                     Update Password
                   </button>

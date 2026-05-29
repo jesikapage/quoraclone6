@@ -154,11 +154,9 @@ export default function NotificationDetailPage() {
   const [isDownvoted, setIsDownvoted] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newCommentText, setNewCommentText] = useState("");
-
-  // State Kontrol Navbar tambahan dari Beranda
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [activeNav, setActiveNav] = useState("notif"); // Tetap menyalakan indikator merah di icon Lonceng
+  const [activeNav, setActiveNav] = useState("notif");
 
   // Menutup menu profil otomatis saat klik di luar area
   useEffect(() => {
@@ -231,35 +229,35 @@ export default function NotificationDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans pb-12">
+    <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans pb-8 sm:pb-12">
       
-      {/* Navbar Utama (Sama persis seperti di Beranda) */}
+      {/* Navbar Utama (Mobile responsive) */}
       <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
+        <div className="max-w-[1200px] mx-auto h-full flex items-center gap-2 px-2 sm:px-4">
           <span
-            className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
+            className="text-[#b92b27] text-lg sm:text-2xl font-bold tracking-tighter cursor-pointer select-none mr-1 sm:mr-2"
             onClick={() => navigate("/")}
           >
             Quora
           </span>
 
-          <div className="flex-1 max-w-[340px]">
-            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-3 py-1.5 hover:border-[#636466] transition">
-              <span className="text-[#636466]"><IconSearch /></span>
+          <div className="flex-1 max-w-[200px] sm:max-w-[340px]">
+            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-2 sm:px-3 py-1 sm:py-1.5 hover:border-[#636466] transition">
+              <span className="text-[#636466] text-xs sm:text-sm"><IconSearch /></span>
               <input
                 type="text"
-                placeholder="Cari Quora"
-                className="bg-transparent text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
+                placeholder="Cari"
+                className="bg-transparent text-xs sm:text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-0.5 sm:gap-1 ml-auto">
             <Link
               to="/"
               onClick={() => setActiveNav("home")}
               title="Beranda"
-              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+              className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
                 activeNav === "home"
                   ? "text-[#b92b27] border-b-2 border-[#b92b27]"
                   : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
@@ -283,13 +281,21 @@ export default function NotificationDetailPage() {
 
             <button
               onClick={() => setShowCreatePost(true)}
-              className="ml-2 flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition"
+              className="hidden sm:flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition ml-2"
             >
               <IconPencil />
-              Tambah Pertanyaan
+              Tambah
             </button>
 
-            <div className="relative ml-2" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowCreatePost(true)}
+              className="sm:hidden flex items-center justify-center w-9 h-9 bg-[#2b69d1] hover:bg-[#3277ed] text-white rounded-[3px] transition"
+              title="Tambah Pertanyaan"
+            >
+              <IconPencil />
+            </button>
+
+            <div className="relative ml-1 sm:ml-2" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setShowMenu(showMenu === "profile" ? null : "profile")}
                 className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
@@ -299,22 +305,21 @@ export default function NotificationDetailPage() {
                   alt="avatar"
                   className="w-8 h-8 rounded-full border border-[#444]"
                 />
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#636466" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
               </button>
 
               {showMenu === "profile" && (
-                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-52 py-1">
+                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-48 py-1">
                   <div className="px-4 py-3 border-b border-[#444]">
-                    <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
-                    <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
+                    <p className="text-xs sm:text-sm font-bold text-[#e2e2e2] truncate">{user?.name || "Pengguna"}</p>
+                    <p className="text-[10px] sm:text-xs text-[#636466] mt-0.5">Lihat profil</p>
                   </div>
-                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>👤</span>Edit Profil
                   </button>
-                  <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={() => { navigate("/settings"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>⚙️</span>Pengaturan
                   </button>
-                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={() => { logout(); navigate("/login"); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>🚪</span>Keluar
                   </button>
                 </div>
@@ -329,20 +334,20 @@ export default function NotificationDetailPage() {
         <CreatePost onClose={() => setShowCreatePost(false)} onSuccess={() => {}} />
       )}
 
-      {/* Main Content */}
-      <main className="max-w-[650px] mx-auto mt-5 px-4">
-        <div className="bg-[#262626] border border-[#333] rounded-[3px] p-5 shadow-sm">
+      {/* Main Content (Mobile responsive) */}
+      <main className="max-w-[650px] mx-auto mt-3 sm:mt-5 px-2 sm:px-4">
+        <div className="bg-[#262626] border border-[#333] rounded-[3px] p-3 sm:p-5 shadow-sm">
           
-          {/* Author Profile */}
-          <div className="flex items-center gap-2.5 mb-3">
+          {/* Author Profile (Mobile responsive) */}
+          <div className="flex items-center gap-2 sm:gap-2.5 mb-3 sm:mb-4">
             <img 
               src={notification.avatar} 
               alt="avatar" 
-              className="w-9 h-9 rounded-full border border-[#444]" 
+              className="w-8 sm:w-9 h-8 sm:h-9 rounded-full border border-[#444] flex-shrink-0" 
             />
-            <div>
-              <p className="font-semibold text-sm text-[#e2e2e2]">{notification.author}</p>
-              <p className="text-[12px] text-[#636466]">
+            <div className="min-w-0">
+              <p className="font-semibold text-xs sm:text-sm text-[#e2e2e2] truncate">{notification.author}</p>
+              <p className="text-[10px] sm:text-[12px] text-[#636466] truncate">
                 {notification.authorRole} · {notification.context.split("·").pop()}
               </p>
             </div>

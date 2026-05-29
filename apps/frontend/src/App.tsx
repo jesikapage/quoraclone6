@@ -6,6 +6,8 @@ import Beranda from './pages/Beranda';
 import PostDetailPage from './pages/PostDetailPage';
 import NotificationDetailPage from './pages/NotificationDetailPage';
 import Notifikasi from './pages/Notifikasi';
+import EditProfile from './pages/EditProfile';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -16,11 +18,13 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         
-        {/* Pastikan route di bawah ini tertutup dengan benar */}
+        {/* Protected routes */}
         <Route path="/" element={<ProtectedRoute><Beranda /></ProtectedRoute>} />
         <Route path="/post/:id" element={<ProtectedRoute><PostDetailPage /></ProtectedRoute>} />
         <Route path="/notification/:notificationId" element={<ProtectedRoute><NotificationDetailPage /></ProtectedRoute>} />
         <Route path="/notifikasi" element={<ProtectedRoute><Notifikasi /></ProtectedRoute>} />
+        <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

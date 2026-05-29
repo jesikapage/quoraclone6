@@ -45,7 +45,8 @@ export default function Notifikasi() {
   // State untuk kontrol Navbar & Modal
   const [showMenu, setShowMenu] = useState<string | null>(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [activeNav, setActiveNav] = useState("notif"); // Set default "notif" karena berada di halaman Notifikasi
+  const [showMobileFilterMenu, setShowMobileFilterMenu] = useState(false);
+  const [activeNav, setActiveNav] = useState("notif");
 
   // Mengatur penutupan menu profil otomatis saat klik di luar area profil
   useEffect(() => {
@@ -128,33 +129,33 @@ export default function Notifikasi() {
   return (
     <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans pb-10">
       
-      {/* Navbar Utama (Sama persis seperti di Beranda) */}
+      {/* Navbar Utama (Mobile responsive) */}
       <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
+        <div className="max-w-[1200px] mx-auto h-full flex items-center gap-2 px-2 sm:px-4">
           <span
-            className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
+            className="text-[#b92b27] text-lg sm:text-2xl font-bold tracking-tighter cursor-pointer select-none mr-1 sm:mr-2"
             onClick={() => navigate("/")}
           >
             Quora
           </span>
 
-          <div className="flex-1 max-w-[340px]">
-            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-3 py-1.5 hover:border-[#636466] transition">
-              <span className="text-[#636466]"><IconSearch /></span>
+          <div className="flex-1 max-w-[200px] sm:max-w-[340px]">
+            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-2 sm:px-3 py-1 sm:py-1.5 hover:border-[#636466] transition">
+              <span className="text-[#636466] text-xs sm:text-sm"><IconSearch /></span>
               <input
                 type="text"
-                placeholder="Cari Quora"
-                className="bg-transparent text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
+                placeholder="Cari"
+                className="bg-transparent text-xs sm:text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-1 ml-auto">
+          <div className="flex items-center gap-0.5 sm:gap-1 ml-auto">
             <Link
               to="/"
               onClick={() => setActiveNav("home")}
               title="Beranda"
-              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
+              className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
                 activeNav === "home"
                   ? "text-[#b92b27] border-b-2 border-[#b92b27]"
                   : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
@@ -178,13 +179,21 @@ export default function Notifikasi() {
 
             <button
               onClick={() => setShowCreatePost(true)}
-              className="ml-2 flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition"
+              className="hidden sm:flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition ml-2"
             >
               <IconPencil />
-              Tambah Pertanyaan
+              Tambah
             </button>
 
-            <div className="relative ml-2" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowCreatePost(true)}
+              className="sm:hidden flex items-center justify-center w-9 h-9 bg-[#2b69d1] hover:bg-[#3277ed] text-white rounded-[3px] transition"
+              title="Tambah Pertanyaan"
+            >
+              <IconPencil />
+            </button>
+
+            <div className="relative ml-1 sm:ml-2" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setShowMenu(showMenu === "profile" ? null : "profile")}
                 className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
@@ -194,22 +203,21 @@ export default function Notifikasi() {
                   alt="avatar"
                   className="w-8 h-8 rounded-full border border-[#444]"
                 />
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#636466" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
               </button>
 
               {showMenu === "profile" && (
-                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-52 py-1">
+                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-48 py-1">
                   <div className="px-4 py-3 border-b border-[#444]">
-                    <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
-                    <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
+                    <p className="text-xs sm:text-sm font-bold text-[#e2e2e2] truncate">{user?.name || "Pengguna"}</p>
+                    <p className="text-[10px] sm:text-xs text-[#636466] mt-0.5">Lihat profil</p>
                   </div>
-                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>👤</span>Edit Profil
                   </button>
-                  <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={() => { navigate("/settings"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>⚙️</span>Pengaturan
                   </button>
-                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
+                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-xs sm:text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
                     <span>🚪</span>Keluar
                   </button>
                 </div>
@@ -224,40 +232,54 @@ export default function Notifikasi() {
         <CreatePost onClose={() => setShowCreatePost(false)} onSuccess={() => {}} />
       )}
 
-      {/* Main Layout Grid */}
-      <div className="max-w-[1000px] mx-auto px-4 pt-6 flex gap-8">
+      {/* Main Layout Grid (Mobile responsive) */}
+      <div className="max-w-[1200px] mx-auto px-2 sm:px-4 pt-4 sm:pt-6 flex flex-col sm:flex-row gap-4 sm:gap-8">
         
-        {/* SISI KIRI: Menu Filter */}
-        <aside className="w-[180px] flex-shrink-0 hidden md:block">
-          <p className="text-[15px] font-bold text-[#e2e2e2] mb-3 pb-2 border-b border-[#333]">Filter</p>
-          <div className="space-y-0.5">
-            {filters.map((filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`w-full text-left text-[13px] px-3 py-1.5 rounded-[4px] transition-all ${
-                  activeFilter === filter 
-                    ? "bg-[#b92b27]/10 text-[#b92b27] font-semibold" 
-                    : "text-[#939598] hover:bg-[#262626] hover:text-[#e2e2e2]"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+        {/* SISI KIRI: Menu Filter (Mobile drawer) */}
+        <aside className={`${showMobileFilterMenu ? 'fixed inset-0 top-[50px] z-20 bg-[#181919]' : 'hidden'} sm:relative sm:block sm:top-auto sm:z-auto sm:bg-transparent sm:inset-auto w-full sm:w-[180px] flex-shrink-0`}>
+          <div className="sm:hidden flex justify-between items-center p-3 border-b border-[#333]">
+            <p className="text-sm font-bold text-[#e2e2e2]">Filter</p>
+            <button onClick={() => setShowMobileFilterMenu(false)} className="text-[#636466] hover:text-[#e2e2e2]">✕</button>
+          </div>
+          <div className="p-3 sm:p-0">
+            <p className="text-[13px] sm:text-[15px] font-bold text-[#e2e2e2] mb-2 sm:mb-3 pb-2 border-b border-[#333]">Filter</p>
+            <div className="space-y-0.5 max-h-[calc(100vh-120px)] overflow-y-auto">
+              {filters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => { setActiveFilter(filter); setShowMobileFilterMenu(false); }}
+                  className={`w-full text-left text-[12px] sm:text-[13px] px-3 py-1.5 rounded-[4px] transition-all ${
+                    activeFilter === filter 
+                      ? "bg-[#b92b27]/10 text-[#b92b27] font-semibold" 
+                      : "text-[#939598] hover:bg-[#262626] hover:text-[#e2e2e2]"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
         </aside>
 
         {/* TENGAH: List Item Notifikasi */}
-        <main className="flex-1 min-w-0 max-w-[650px]">
+        <main className="flex-1 min-w-0 max-w-full sm:max-w-[650px]">
           
           {/* Header Konten (Judul & Aksi) */}
-          <div className="flex justify-between items-end mb-4 pb-2 border-b border-[#333]">
-            <h2 className="text-[15px] font-bold text-[#e2e2e2]">
-              {activeFilter === "Semua Notifikasi" ? "Notifikasi" : activeFilter}
-            </h2>
-            <div className="text-[13px] text-[#939598] flex gap-1">
-              <button onClick={markAllAsRead} className="hover:underline">Tandai Semua Sudah Dibaca</button>
-              <span>·</span>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2 mb-4 pb-2 border-b border-[#333]">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowMobileFilterMenu(!showMobileFilterMenu)}
+                className="sm:hidden text-[#636466] hover:text-[#e2e2e2] px-2 py-1.5 hover:bg-[#262626] rounded transition text-sm"
+              >
+                ≡ Filter
+              </button>
+              <h2 className="text-[14px] sm:text-[15px] font-bold text-[#e2e2e2]">
+                {activeFilter === "Semua Notifikasi" ? "Notifikasi" : activeFilter}
+              </h2>
+            </div>
+            <div className="text-[11px] sm:text-[13px] text-[#939598] flex gap-1 flex-wrap">
+              <button onClick={markAllAsRead} className="hover:underline">Tandai Semua</button>
+              <span className="hidden sm:inline">·</span>
               <button className="hover:underline">Setelan</button>
             </div>
           </div>
@@ -268,24 +290,24 @@ export default function Notifikasi() {
               <div 
                 key={notif.id} 
                 onClick={() => navigate(`/notification/${notif.notificationId}`)}
-                className={`flex gap-3 p-4 cursor-pointer transition-all border-b border-[#333] last:border-0 hover:bg-[#2c2d2e] ${
+                className={`flex gap-2 sm:gap-3 p-2 sm:p-4 cursor-pointer transition-all border-b border-[#333] last:border-0 hover:bg-[#2c2d2e] ${
                   notif.isUnread ? "bg-[#1f242e]/50" : "bg-transparent"
                 }`}
               >
                 {/* Avatar */}
-                <img src={notif.avatar} alt="avatar" className="w-10 h-10 rounded-full border border-[#444] flex-shrink-0" />
+                <img src={notif.avatar} alt="avatar" className="w-8 sm:w-10 h-8 sm:h-10 rounded-full border border-[#444] flex-shrink-0" />
 
                 {/* Konten Notifikasi */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] text-[#939598] mb-1 leading-snug">
+                  <p className="text-[11px] sm:text-[13px] text-[#939598] mb-0.5 sm:mb-1 leading-snug">
                     {notif.context}
                   </p>
-                  <p className="text-[15px] font-bold text-[#e2e2e2] leading-snug mb-1">
+                  <p className="text-[13px] sm:text-[15px] font-bold text-[#e2e2e2] leading-snug mb-0.5 sm:mb-1">
                     {notif.mainText}
                   </p>
                   
                   {notif.subText && (
-                    <div className="text-[14px] text-[#d5d6d7] mt-2 p-2.5 border border-[#444] rounded-[4px] bg-[#181919]/50">
+                    <div className="text-[12px] sm:text-[14px] text-[#d5d6d7] mt-1 sm:mt-2 p-1.5 sm:p-2.5 border border-[#444] rounded-[4px] bg-[#181919]/50">
                       {notif.subText}
                     </div>
                   )}
@@ -294,23 +316,23 @@ export default function Notifikasi() {
                 {/* Tombol Opsi (Titik Tiga) */}
                 <button 
                   onClick={(e) => e.stopPropagation()} 
-                  className="text-[#939598] hover:text-[#e2e2e2] hover:bg-[#333] h-fit p-1.5 rounded-full transition"
+                  className="text-[#939598] hover:text-[#e2e2e2] hover:bg-[#333] h-fit p-1.5 rounded-full transition flex-shrink-0"
                 >
-                  <MoreHorizontal size={18} />
+                  <MoreHorizontal size={16} className="sm:w-[18px] sm:h-[18px]" />
                 </button>
               </div>
             ))}
 
             {/* EMPTY STATE */}
             {filteredNotif.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
-                <div className="mb-4">
+              <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-3 sm:px-4 text-center">
+                <div className="mb-3 sm:mb-4">
                   <BigBellIcon />
                 </div>
-                <h3 className="text-[16px] font-bold text-[#e2e2e2] mb-2">
+                <h3 className="text-[14px] sm:text-[16px] font-bold text-[#e2e2e2] mb-1.5 sm:mb-2">
                   Tidak Ada Notifikasi Baru
                 </h3>
-                <p className="text-[13px] text-[#939598] max-w-[350px] leading-relaxed">
+                <p className="text-[11px] sm:text-[13px] text-[#939598] max-w-[300px] sm:max-w-[350px] leading-relaxed">
                   Notifikasi yang Anda terima dalam jangka waktu 30 hari terakhir akan ditampilkan di sini.
                 </p>
               </div>
