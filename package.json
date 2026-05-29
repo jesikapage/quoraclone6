@@ -1,12 +1,13 @@
 {
-  "name": "quoraclone6",
-  "module": "index.ts",
-  "type": "module",
+  "name": "social-media-app",
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:backend": "bun run --cwd apps/backend dev",
+    "dev:frontend": "bun run --cwd apps/frontend dev"
   }
 }

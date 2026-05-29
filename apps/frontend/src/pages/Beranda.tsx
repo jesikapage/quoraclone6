@@ -1,482 +1,328 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
-import { useNavigate, Link } from "react-router-dom";
-import CreatePost from "./CreatePost";
+import { Link, useNavigate } from "react-router-dom";
+import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X, HelpCircle, PenLine, Send } from "lucide-react";
+import Navbar from "../components/Navbar";
+import Sidebar from "../components/Sidebar";
 
 type Post = {
   id: string;
   content: string;
-  image_url: string | null;
-  created_at: string;
+  imageUrl: string | null;
+  createdAt: string;
   user: {
+    id: string;
     name: string;
-    avatar_url: string;
-    credential?: string;
+    avatar: string | null;
   };
-  upvotes: number;
-  comments: number;
-  shares: number;
-  upvotedBy: string[];
-  downvotedBy: string[];
-  sharedBy: string[];
+  _count?: {
+    comments: number;
+    likes: number;
+  };
 };
 
-// ── SVG Icons ──────────────────────────────────────────────────────────────
-const IconUpvote = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="18 15 12 9 6 15" />
-  </svg>
-);
-const IconDownvote = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-const IconComment = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-const IconShare = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="17 1 21 5 17 9" />
-    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-    <polyline points="7 23 3 19 7 15" />
-    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-  </svg>
-);
-const IconSearch = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-const IconHome = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-  </svg>
-);
-const IconBell = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-const IconPencil = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-const IconDots = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-  </svg>
-);
+const C = {
+  bg: "#181919",
+  surface: "#262626",
+  surfaceHover: "#2f2f2f",
+  border: "#333333",
+  textPrimary: "#e2e2e2",
+  textSecondary: "#939598",
+  textMuted: "#636466",
+  red: "#B92B27",
+  blue: "#2B69D1",
+};
 
-export default function Beranda() {
-  const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [showMenu, setShowMenu] = useState<string | null>(null);
-  const [showCreatePost, setShowCreatePost] = useState(false);
-  const [activeNav, setActiveNav] = useState("home");
+const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', Ubuntu, Cantarell, 'Helvetica Neue', Oxygen-Sans, sans-serif";
 
-  useEffect(() => {
-    const dummyPosts: Post[] = [
-      {
-        id: "101",
-        content: "Bagaimana cara mengoptimalkan penggunaan AWS Lambda untuk backend aplikasi skala besar?",
-        image_url: null,
-        created_at: "2026-05-16T12:00:00Z",
-        user: {
-          name: "Rito Backend Developer",
-          avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Rito",
-          credential: "Software Engineer · AWS Certified",
-        },
-        upvotes: 9400,
-        comments: 288,
-        shares: 279,
-        upvotedBy: [],
-        downvotedBy: [],
-        sharedBy: [],
-      },
-      {
-        id: "102",
-        content: "Desain Dark Mode Quora Clone kita malam ini terlihat sangat responsif menggunakan Tailwind CSS!",
-        image_url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500",
-        created_at: "2026-05-16T14:30:00Z",
-        user: {
-          name: "Prilia UI/UX",
-          avatar_url: "https://api.dicebear.com/7.x/adventurer/svg?seed=Prilia",
-          credential: "UI/UX Designer · Figma Expert",
-        },
-        upvotes: 7,
-        comments: 3,
-        shares: 1,
-        upvotedBy: [],
-        downvotedBy: [],
-        sharedBy: [],
-      },
-    ];
-    setPosts(dummyPosts);
-  }, []);
+function timeAgo(dateStr: string) {
+  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (diff < 60) return `${diff} detik lalu`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
+  return `${Math.floor(diff / 86400)} hari lalu`;
+}
 
-  useEffect(() => {
-    function handleClickOutside() { setShowMenu(null); }
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+function PostCard({ post }: { post: Post }) {
+  const { token } = useAuthStore();
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post._count?.likes || 0);
 
-  const handleLogout = () => { logout(); navigate("/login"); };
-
-  function handleUpvote(postId: string) {
-    const userId = user?.id || "guest";
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const alreadyUp = post.upvotedBy.includes(userId);
-        return {
-          ...post,
-          upvotes: alreadyUp ? post.upvotes - 1 : post.upvotes + 1,
-          upvotedBy: alreadyUp
-            ? post.upvotedBy.filter((id) => id !== userId)
-            : [...post.upvotedBy, userId],
-          downvotedBy: post.downvotedBy.filter((id) => id !== userId),
-        };
-      })
-    );
-  }
-
-  function handleDownvote(postId: string) {
-    const userId = user?.id || "guest";
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const alreadyDown = post.downvotedBy.includes(userId);
-        const wasUpvoted = post.upvotedBy.includes(userId);
-        return {
-          ...post,
-          downvotedBy: alreadyDown
-            ? post.downvotedBy.filter((id) => id !== userId)
-            : [...post.downvotedBy, userId],
-          upvotes: wasUpvoted ? post.upvotes - 1 : post.upvotes,
-          upvotedBy: wasUpvoted
-            ? post.upvotedBy.filter((id) => id !== userId)
-            : post.upvotedBy,
-        };
-      })
-    );
-  }
-
-  function handleShare(postId: string) {
-    const userId = user?.id || "guest";
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.id !== postId) return post;
-        const alreadyShared = post.sharedBy.includes(userId);
-        return {
-          ...post,
-          shares: alreadyShared ? post.shares - 1 : post.shares + 1,
-          sharedBy: alreadyShared
-            ? post.sharedBy.filter((id) => id !== userId)
-            : [...post.sharedBy, userId],
-        };
-      })
-    );
-  }
-
-  function formatCount(n: number): string {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(".0", "") + " jt";
-    if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + " rb";
-    return String(n);
-  }
-
-  function formatDate(dateStr: string): string {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffH = Math.floor((now.getTime() - d.getTime()) / 3600000);
-    if (diffH < 1) return "baru saja";
-    if (diffH < 24) return `${diffH} jam lalu`;
-    const diffD = Math.floor(diffH / 24);
-    if (diffD < 7) return `${diffD} hari lalu`;
-    return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
-  }
+  const handleLike = async () => {
+    if (!token) return alert("Login dulu untuk like!");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/likes/${post.id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setLiked(data.liked);
+      setLikeCount((p) => data.liked ? p + 1 : p - 1);
+    } catch {
+      console.error("Gagal like post");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#181919] text-[#e2e2e2] font-sans">
-      {/* Navbar */}
-      <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
-        <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
-          <span
-            className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
-            onClick={() => navigate("/")}
-          >
-            Quora
-          </span>
+    <article style={{ background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "16px", boxShadow: "0 1px 3px rgba(0,0,0,0.4)", marginBottom: "24px", borderRadius: "4px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <img
+            src={post.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${post.user.name}`}
+            alt={post.user.name}
+            style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${C.border}`, flexShrink: 0 }}
+          />
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontFamily: FONT, fontWeight: 600, fontSize: 15, color: C.textPrimary }}>
+                {post.user.name}
+              </span>
+            </div>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, lineHeight: 1.4, margin: 0 }}>
+              {timeAgo(post.createdAt)}
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <div className="flex-1 max-w-[340px]">
-            <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-3 py-1.5 hover:border-[#636466] transition">
-              <span className="text-[#636466]"><IconSearch /></span>
-              <input
-                type="text"
-                placeholder="Cari Quora"
-                className="bg-transparent text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
+      <h2 style={{ fontFamily: FONT, fontSize: 18, fontWeight: 700, color: C.textPrimary, lineHeight: 1.3, margin: "8px 0" }}>
+        {post.content}
+      </h2>
+
+      <Link
+        to={`/posts/${post.id}`}
+        style={{ fontFamily: FONT, fontSize: 15, color: C.blue, lineHeight: 1.6, margin: "8px 0", textDecoration: "none", display: "block" }}
+      >
+        Klik untuk membaca selengkapnya...
+      </Link>
+
+      {post.imageUrl && (
+        <img src={post.imageUrl} alt="post" style={{ width: "100%", maxHeight: 256, objectFit: "cover", borderRadius: 4, marginBottom: 12, border: `1px solid ${C.border}` }} />
+      )}
+
+      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 8, display: "flex", alignItems: "center", gap: 6, marginTop: 8 }}>
+        <div style={{ display: "flex", borderRadius: 100, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+          <button
+            onClick={handleLike}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", background: liked ? "#1a2a4a" : C.surface, color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 15, fontWeight: 500, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer" }}
+          >
+            <ThumbsUp size={14} /> Dukung · {likeCount}
+          </button>
+          <button style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "5px 10px", background: C.surface, color: C.textSecondary, border: "none", cursor: "pointer" }}>
+            <ThumbsDown size={14} />
+          </button>
+        </div>
+
+        <Link
+          to={`/posts/${post.id}`}
+          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, textDecoration: "none" }}
+        >
+          <MessageCircle size={14} /> {post._count && post._count.comments > 0 ? `${post._count.comments} Komentar` : "Komentar"}
+        </Link>
+
+        <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1px solid ${C.border}`, background: C.surface, fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}>
+          <Repeat2 size={14} /> Bagikan
+        </button>
+
+        <button style={{ marginLeft: "auto", color: C.textMuted, background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+          <MoreHorizontal size={18} />
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function FeedTabs({ avatarUrl, onOpenModal }: { avatarUrl: string, onOpenModal: () => void }) {
+  return (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, marginBottom: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.4)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", borderBottom: `1px solid ${C.border}` }}>
+        <img src={avatarUrl} alt="avatar" style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0 }} />
+        <input
+          type="text"
+          placeholder="Apa yang ingin Anda tanyakan atau bagikan?"
+          readOnly
+          onClick={onOpenModal}
+          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontFamily: FONT, fontSize: 15, color: C.textMuted, cursor: "pointer" }}
+        />
+      </div>
+      <div style={{ display: "flex" }}>
+        {[
+          { icon: <HelpCircle size={16} />, label: "Tanya" },
+          { icon: <PenLine size={16} />, label: "Jawab" },
+          { icon: <Send size={16} />, label: "Kiriman" },
+        ].map((item, i) => (
+          <button
+            key={item.label}
+            onClick={onOpenModal}
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "10px 0", borderLeft: i > 0 ? `1px solid ${C.border}` : "none", background: C.surface, border: "none", fontFamily: FONT, fontSize: 15, fontWeight: 500, color: C.textSecondary, cursor: "pointer" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = C.surface; }}
+          >
+            {item.icon} {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Beranda() {
+  const { user: authUser, token } = useAuthStore();
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorModal, setErrorModal] = useState("");
+
+  const user = authUser ?? {
+    name: "Guest",
+    avatar: null,
+  };
+
+  const avatarUrl = (user as any).avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`;
+
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`);
+      const data = await res.json();
+      setPosts(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Gagal mengambil data post", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleOpenModal = () => {
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCreatePost = async () => {
+    if (!postContent.trim() || !token) return;
+    setIsSubmitting(true);
+    setErrorModal("");
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: postContent }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrorModal(data.error || "Gagal memposting.");
+        return;
+      }
+      setPostContent("");
+      setIsModalOpen(false);
+      fetchPosts();
+    } catch {
+      setErrorModal("Koneksi ke server gagal.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredPosts = posts.filter((post) =>
+    post.content.toLowerCase().includes(search.toLowerCase()) ||
+    post.user.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div style={{ minHeight: "100vh", background: C.bg, fontFamily: FONT, fontSize: 15 }}>
+      <Navbar search={search} onSearchChange={setSearch} />
+
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "16px", display: "flex", gap: 24 }}>
+        <div className="lg-sidebar"><Sidebar /></div>
+
+        <main style={{ flex: 1, minWidth: 0, maxWidth: 570 }}>
+          <FeedTabs avatarUrl={avatarUrl} onOpenModal={handleOpenModal} />
+
+          {search && (
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textMuted, marginBottom: 12 }}>
+              Hasil untuk "<strong style={{ color: C.textSecondary }}>{search}</strong>" — {filteredPosts.length} ditemukan
+            </p>
+          )}
+
+          <div>
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => <PostCard key={post.id} post={post} />)
+            ) : (
+              <div style={{ textAlign: "center", padding: "48px 0", color: C.textMuted }}>
+                <p style={{ fontSize: 15, fontFamily: FONT }}>Belum ada postingan.</p>
+              </div>
+            )}
+          </div>
+        </main>
+
+        <aside style={{ width: 180, flexShrink: 0 }} className="right-sidebar">
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: 16, textAlign: "center" }}>
+            <p style={{ fontSize: 15, color: C.textMuted, fontFamily: FONT }}>Ruang iklan</p>
+          </div>
+        </aside>
+      </div>
+
+      {isModalOpen && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.75)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, width: "100%", maxWidth: 600, display: "flex", flexDirection: "column", boxShadow: "0 10px 25px rgba(0,0,0,0.5)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <img src={avatarUrl} alt="avatar" style={{ width: 40, height: 40, borderRadius: "50%" }} />
+                <h2 style={{ fontFamily: FONT, color: C.textPrimary, margin: 0, fontSize: 16, fontWeight: 600 }}>{user.name}</h2>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: 4 }}>
+                <X size={24} />
+              </button>
+            </div>
+
+            {errorModal && (
+              <div style={{ background: C.red, color: "#fff", padding: "8px 16px", fontSize: 13, fontFamily: FONT }}>
+                {errorModal}
+              </div>
+            )}
+
+            <div style={{ padding: 16 }}>
+              <textarea
+                autoFocus
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
+                placeholder="Apa yang ingin Anda tanyakan atau bagikan?"
+                style={{ width: "100%", minHeight: 180, background: "transparent", border: "none", outline: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 18, resize: "none" }}
               />
             </div>
-          </div>
 
-          <div className="flex items-center gap-1 ml-auto">
-            <Link
-              to="/"
-              onClick={() => setActiveNav("home")}
-              title="Beranda"
-              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
-                activeNav === "home"
-                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
-                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
-              }`}
-            >
-              <IconHome />
-            </Link>
-
-            <Link
-              to="/notifikasi"
-              onClick={() => setActiveNav("notif")}
-              title="Notifikasi"
-              className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
-                activeNav === "notif"
-                  ? "text-[#b92b27] border-b-2 border-[#b92b27]"
-                  : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
-              }`}
-            >
-              <IconBell />
-            </Link>
-
-            <button
-              onClick={() => setShowCreatePost(true)}
-              className="ml-2 flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition"
-            >
-              <IconPencil />
-              Tambah Pertanyaan
-            </button>
-
-            <div className="relative ml-2" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "flex-end", padding: 16, borderTop: `1px solid ${C.border}` }}>
               <button
-                onClick={() => setShowMenu(showMenu === "profile" ? null : "profile")}
-                className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
+                onClick={handleCreatePost}
+                disabled={isSubmitting || !postContent.trim()}
+                style={{ background: isSubmitting || !postContent.trim() ? C.textMuted : C.blue, color: "#fff", border: "none", padding: "8px 20px", borderRadius: 100, fontFamily: FONT, fontWeight: 600, cursor: isSubmitting || !postContent.trim() ? "not-allowed" : "pointer" }}
               >
-                <img
-                  src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full border border-[#444]"
-                />
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#636466" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+                {isSubmitting ? "Mengirim..." : "Kirim"}
               </button>
-
-              {showMenu === "profile" && (
-                <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-52 py-1">
-                  <div className="px-4 py-3 border-b border-[#444]">
-                    <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
-                    <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
-                  </div>
-                  <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                    <span>👤</span>Edit Profil
-                  </button>
-                  <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                    <span>⚙️</span>Pengaturan
-                  </button>
-                  <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                    <span>🚪</span>Keluar
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
-      </nav>
+      )}
 
-      {/* Main Layout */}
-      <div className="max-w-[1000px] mx-auto px-4 pt-5 flex gap-5">
-        {/* Feed */}
-        <main className="flex-1 min-w-0 max-w-[570px] space-y-3">
-          {/* Shortcut Bar */}
-          <div className="bg-[#262626] border border-[#333] rounded-[3px] px-4 py-3 flex items-center gap-3">
-            <img
-              src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
-              alt="avatar"
-              className="w-8 h-8 rounded-full border border-[#444]"
-            />
-            <button
-              onClick={() => setShowCreatePost(true)}
-              className="flex-1 text-left text-sm text-[#636466] bg-[#181919] border border-[#444] hover:border-[#2b69d1] rounded-[3px] px-3 py-2 transition"
-                >
-              Tambahkan pertanyaan atau tautan
-            </button>
-          </div>
-
-          {showCreatePost && (
-            <CreatePost onClose={() => setShowCreatePost(false)} onSuccess={() => {}} />
-          )}
-
-          {posts.map((post) => {
-            const userId = user?.id || "guest";
-            const isUpvoted = post.upvotedBy.includes(userId);
-            const isDownvoted = post.downvotedBy.includes(userId);
-            const isShared = post.sharedBy.includes(userId);
-
-            return (
-              <div key={post.id} className="bg-[#262626] border border-[#333] rounded-[3px] overflow-hidden">
-                {/* Header Kiriman */}
-                <div className="flex items-start justify-between px-4 pt-4 pb-2">
-                  <div className="flex items-start gap-2.5">
-                    <img src={post.user.avatar_url} alt="user" className="w-9 h-9 rounded-full border border-[#444] flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-sm text-[#e2e2e2] leading-tight hover:underline cursor-pointer">{post.user.name}</p>
-                      {post.user.credential && (
-                        <p className="text-[12px] text-[#636466] leading-tight">{post.user.credential}</p>
-                      )}
-                      <p className="text-[11px] text-[#636466] mt-0.5">{formatDate(post.created_at)}</p>
-                    </div>
-                  </div>
-
-                  <div className="relative" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => setShowMenu(showMenu === post.id ? null : post.id)}
-                      className="text-[#636466] hover:text-[#e2e2e2] hover:bg-[#333] p-1.5 rounded-full transition"
-                    >
-                      <IconDots />
-                    </button>
-                    {showMenu === post.id && (
-                      <div className="absolute right-0 top-9 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-20 w-56 py-1">
-                        <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                          <span>🔗</span>Salin tautan
-                        </button>
-                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                          <span>🚫</span>Tidak tertarik dengan ini
-                        </button>
-                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                          <span>🔖</span>Simpan
-                        </button>
-                        <button onClick={() => { handleDownvote(post.id); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                          <span>⬇️</span>Dukung turun pertanyaan
-                        </button>
-                        <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                          <span>🚩</span>Laporkan
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Konten Teks */}
-                <div className="px-4 pb-3">
-                  <Link to={`/post/${post.id}`}>
-                    <p className="text-[17px] font-semibold text-[#e2e2e2] leading-snug hover:text-[#2b69d1] cursor-pointer transition">
-                      {post.content}
-                    </p>
-                  </Link>
-                </div>
-
-                {post.image_url && (
-                  <div className="pb-3 px-4">
-                    <Link to={`/post/${post.id}`}>
-                      <img src={post.image_url} alt="post" className="w-full max-h-72 object-cover rounded-[3px] border border-[#333] cursor-pointer" />
-                    </Link>
-                  </div>
-                )}
-
-                {/* Action Bar */}
-                <div className="border-t border-[#333] px-3 py-1 flex items-center gap-1">
-                  <div className="flex items-center rounded-full border border-[#444] overflow-hidden mr-1">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleUpvote(post.id); }}
-                      className={`flex items-center gap-1.5 pl-3 pr-2.5 py-1.5 text-[13px] font-medium transition ${
-                        isUpvoted ? "bg-[#2b69d1] text-white" : "text-[#939598] hover:bg-[#1a3a6b] hover:text-[#e2e2e2]"
-                      }`}
-                    >
-                      <IconUpvote />
-                      <span>Dukung Naik</span>
-                      {post.upvotes > 0 && (
-                        <span className={`ml-0.5 font-semibold ${isUpvoted ? "text-white" : "text-[#e2e2e2]"}`}>
-                          · {formatCount(post.upvotes)}
-                        </span>
-                      )}
-                    </button>
-                    <div className="w-px h-5 bg-[#444]" />
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleDownvote(post.id); }}
-                      className={`px-2.5 py-1.5 transition ${
-                        isDownvoted ? "bg-[#b92b27] text-white" : "text-[#939598] hover:bg-[#3d1010] hover:text-[#e2e2e2]"
-                      }`}
-                      title="Dukung Turun"
-                    >
-                      <IconDownvote />
-                    </button>
-                  </div>
-
-                  <Link
-                    to={`/post/${post.id}`}
-                    className="flex items-center gap-1.5 text-[13px] font-medium text-[#939598] hover:bg-[#333] hover:text-[#e2e2e2] px-3 py-1.5 rounded-full transition"
-                  >
-                    <IconComment />
-                    {post.comments > 0 && <span>{formatCount(post.comments)}</span>}
-                  </Link>
-
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleShare(post.id); }}
-                    className={`flex items-center gap-1.5 text-[13px] font-medium px-3 py-1.5 rounded-full transition ${
-                      isShared ? "text-[#2b69d1]" : "text-[#939598] hover:bg-[#333] hover:text-[#e2e2e2]"
-                    }`}
-                  >
-                    <IconShare />
-                    {post.shares > 0 && <span>{formatCount(post.shares)}</span>}
-                  </button>
-
-                  <button className="ml-auto text-[#939598] hover:bg-[#333] hover:text-[#e2e2e2] p-1.5 rounded-full transition">
-                    <IconDots />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </main>
-
-        {/* Sidebar Kanan */}
-        <aside className="w-[300px] flex-shrink-0 hidden lg:block space-y-4">
-          <div className="bg-[#262626] border border-[#333] rounded-[3px] overflow-hidden">
-            <div className="h-16 bg-gradient-to-r from-[#b92b27] to-[#8b1a18]" />
-            <div className="px-4 pb-4 -mt-8">
-              <img
-                src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
-                alt="avatar"
-                className="w-16 h-16 rounded-full border-4 border-[#262626]"
-              />
-              <p className="font-bold text-[15px] text-[#e2e2e2] mt-2">{user?.name || "Pengguna"}</p>
-              <p className="text-[12px] text-[#636466] mt-0.5">Mahasiswa · Quora Clone</p>
-              <Link
-                to="/profile/edit"
-                className="mt-3 block text-center text-sm font-semibold text-[#2b69d1] border border-[#2b69d1] hover:bg-[#1a3a6b] rounded-[3px] px-3 py-1.5 transition"
-              >
-                Edit Profil
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-[#262626] border border-[#333] rounded-[3px] p-4">
-            <p className="font-bold text-[13px] text-[#e2e2e2] mb-3">Topik yang Relevan</p>
-            {["Teknologi", "Pemrograman Web", "UI/UX Design", "Backend Development", "Cloud Computing"].map((topic) => (
-              <div key={topic} className="flex items-center gap-2 py-1.5 hover:bg-[#333] -mx-2 px-2 rounded-[3px] cursor-pointer transition group">
-                <div className="w-7 h-7 bg-[#333] rounded-[3px] flex items-center justify-center text-xs">🏷️</div>
-                <span className="text-[13px] text-[#e2e2e2] group-hover:text-[#2b69d1] transition">{topic}</span>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-[11px] text-[#636466] px-1 leading-relaxed">
-            Tentang · Karir · Privasi · Ketentuan · © 2026 Quora Clone, Kelompok 6 PPWL
-          </p>
-        </aside>
-      </div>
+      <style>{`
+        .lg-sidebar { display: none; }
+        .right-sidebar { display: none; }
+        @media (min-width: 1024px) {
+          .lg-sidebar { display: block; }
+          .right-sidebar { display: block; }
+        }
+        input::placeholder { color: #636466; }
+      `}</style>
     </div>
   );
 }

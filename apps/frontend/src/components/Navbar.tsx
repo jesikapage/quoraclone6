@@ -1,141 +1,155 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { useAuthStore } from "../stores/auth.store";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  Home, BookOpen, PenLine, Rocket, Bell,
+  Search, ChevronDown, Globe,
+} from "lucide-react";
+import { useState } from "react";
 
-// Icons
-const IconSearch = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-const IconHome = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-  </svg>
-);
-const IconBell = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-const IconPencil = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
+const C = {
+  bg: "#181919",
+  surface: "#262626",
+  surfaceHover: "#2f2f2f",
+  border: "#333333",
+  textPrimary: "#e2e2e2",
+  textSecondary: "#939598",
+  red: "#B92B27",
+};
+
+const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', Ubuntu, Cantarell, 'Helvetica Neue', Oxygen-Sans, sans-serif";
+
+const NAV_ITEMS = [
+  { to: "/",           icon: Home,     label: "Beranda" },
+  { to: "/mengikuti",  icon: BookOpen, label: "Mengikuti" },
+  { to: "/jawab",      icon: PenLine,  label: "Jawab" },
+  { to: "/ruang",      icon: Rocket,   label: "Ruang" },
+  { to: "/notifications", icon: Bell, label: "Notifikasi" },
+];
 
 interface NavbarProps {
-  activeNav?: string;
-  onNavChange?: (nav: string) => void;
-  onCreatePost?: () => void;
+  search: string;
+  onSearchChange: (value: string) => void;
 }
 
-export default function Navbar({ activeNav = "home", onNavChange, onCreatePost }: NavbarProps) {
-  const { user, logout } = useAuthStore();
+export default function Navbar({ search, onSearchChange }: NavbarProps) {
+  const { user: authUser, logout } = useAuthStore();
   const navigate = useNavigate();
-  const [showMenu, setShowMenu] = useState<string | null>(null);
+  const [activeNav, setActiveNav] = useState("/");
+
+  const user = authUser ?? {
+    name: "Guest",
+    avatar: null,
+  };
+
+  const avatarUrl = user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.name}`;
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
-  const handleNavClick = (nav: string, path: string) => {
-    onNavChange?.(nav);
-    navigate(path);
+  const handleNavClick = (to: string) => {
+    setActiveNav(to);
+    navigate(to);
   };
 
   return (
-    <nav className="h-[50px] bg-[#262626] border-b border-[#333] sticky top-0 z-30">
-      <div className="max-w-[1000px] mx-auto h-full flex items-center gap-2 px-4">
-        <span
-          className="text-[#b92b27] text-2xl font-bold tracking-tighter cursor-pointer select-none mr-2"
-          onClick={() => handleNavClick("home", "/")}
-        >
-          Quora
-        </span>
+    <header style={{ position: "sticky", top: 0, zIndex: 50, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 50 }}>
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "0 16px", height: "100%", display: "flex", alignItems: "center", gap: 8 }}>
 
-        <div className="flex-1 max-w-[340px]">
-          <div className="flex items-center gap-2 bg-[#181919] border border-[#444] rounded-[3px] px-3 py-1.5 hover:border-[#636466] transition">
-            <span className="text-[#636466]"><IconSearch /></span>
-            <input
-              type="text"
-              placeholder="Cari Quora"
-              className="bg-transparent text-sm text-[#e2e2e2] outline-none w-full placeholder-[#636466]"
-            />
-          </div>
+        <Link to="/" style={{ color: C.red, fontWeight: 900, fontSize: 22, textDecoration: "none", letterSpacing: -1, flexShrink: 0, marginRight: 4, fontFamily: FONT }}>
+          Quora
+        </Link>
+
+        <nav style={{ display: "flex", alignItems: "center", height: 50 }}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeNav === item.to;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.to}
+                onClick={() => handleNavClick(item.to)}
+                style={{
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                  padding: "0 12px", height: "100%",
+                  borderBottom: isActive ? `2px solid ${C.red}` : "2px solid transparent",
+                  borderTop: "none", borderLeft: "none", borderRight: "none",
+                  color: isActive ? C.red : C.textSecondary,
+                  background: "none", fontFamily: FONT, fontSize: 11, fontWeight: 500,
+                  cursor: "pointer", gap: 2, transition: "background 0.15s",
+                }}
+                onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+              >
+                <Icon size={20} color={isActive ? C.red : C.textSecondary} />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div style={{ flex: 1, maxWidth: 220, position: "relative", marginLeft: 8 }}>
+          <Search size={13} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: C.textSecondary }} />
+          <input
+            type="search"
+            placeholder="Cari postingan atau pengguna..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            style={{
+              width: "100%", background: C.bg, border: `1px solid ${C.border}`,
+              borderRadius: 3, padding: "6px 12px 6px 30px", fontSize: 15,
+              color: C.textPrimary, outline: "none", boxSizing: "border-box", fontFamily: FONT,
+            }}
+          />
         </div>
 
-        <div className="flex items-center gap-1 ml-auto">
-          <Link
-            to="/"
-            onClick={() => onNavChange?.("home")}
-            title="Beranda"
-            className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
-              activeNav === "home"
-                ? "text-[#b92b27] border-b-2 border-[#b92b27]"
-                : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
-            }`}
-          >
-            <IconHome />
-          </Link>
-
-          <Link
-            to="/notifikasi"
-            onClick={() => onNavChange?.("notif")}
-            title="Notifikasi"
-            className={`flex items-center justify-center w-10 h-10 rounded-[3px] transition ${
-              activeNav === "notif"
-                ? "text-[#b92b27] border-b-2 border-[#b92b27]"
-                : "text-[#636466] hover:bg-[#333] hover:text-[#e2e2e2]"
-            }`}
-          >
-            <IconBell />
-          </Link>
-
-          <button
-            onClick={onCreatePost}
-            className="ml-2 flex items-center gap-1.5 bg-[#2b69d1] hover:bg-[#3277ed] text-white text-sm font-semibold px-4 py-1.5 rounded-[3px] transition"
-          >
-            <IconPencil />
-            Tambah Pertanyaan
-          </button>
-
-          <div className="relative ml-2" onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
+          <img
+            src={avatarUrl}
+            alt="avatar"
+            onClick={() => navigate("/profile/edit")}
+            style={{ width: 32, height: 32, borderRadius: "50%", border: `1px solid ${C.border}`, cursor: "pointer" }}
+          />
+          <span style={{ fontFamily: FONT, fontSize: 14, color: C.textPrimary, fontWeight: 500 }}>
+            {user.name}
+          </span>
+          <Globe size={20} style={{ color: C.textSecondary, cursor: "pointer" }} />
+          {authUser ? (
             <button
-              onClick={() => setShowMenu(showMenu === "profile" ? null : "profile")}
-              className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
+              onClick={handleLogout}
+              style={{
+                fontFamily: FONT, fontSize: 15, fontWeight: 500,
+                color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3,
+                padding: "5px 10px", background: C.surface, cursor: "pointer",
+              }}
             >
-              <img
-                src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
-                alt="avatar"
-                className="w-8 h-8 rounded-full border border-[#444]"
-              />
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#636466" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
+              Keluar
             </button>
-
-            {showMenu === "profile" && (
-              <div className="absolute right-0 top-11 bg-[#2e2e2e] border border-[#444] rounded-[3px] shadow-lg z-40 w-52 py-1">
-                <div className="px-4 py-3 border-b border-[#444]">
-                  <p className="text-sm font-bold text-[#e2e2e2]">{user?.name || "Pengguna"}</p>
-                  <p className="text-xs text-[#636466] mt-0.5">Lihat profil</p>
-                </div>
-                <button onClick={() => { navigate("/profile/edit"); setShowMenu(null); }} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                  <span>👤</span>Edit Profil
-                </button>
-                <button onClick={() => setShowMenu(null)} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                  <span>⚙️</span>Pengaturan
-                </button>
-                <button onClick={handleLogout} className="w-full text-left flex items-center gap-3 px-4 py-2 text-sm text-[#e2e2e2] hover:bg-[#3a3a3a] transition">
-                  <span>🚪</span>Keluar
-                </button>
-              </div>
-            )}
-          </div>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              style={{
+                fontFamily: FONT, fontSize: 15, fontWeight: 500,
+                color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3,
+                padding: "5px 10px", background: C.surface, cursor: "pointer",
+              }}
+            >
+              Masuk
+            </button>
+          )}
+          <button
+            onClick={() => authUser ? null : navigate("/login")}
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              background: C.red, color: "#fff", border: "none", borderRadius: 3,
+              padding: "6px 12px", fontFamily: FONT,
+              fontSize: 15, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            Tambah pertanyaan <ChevronDown size={14} />
+          </button>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

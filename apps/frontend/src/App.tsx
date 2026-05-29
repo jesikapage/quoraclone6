@@ -1,35 +1,29 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Beranda from './pages/Beranda';
-import PostDetailPage from './pages/PostDetailPage';
-import NotificationDetailPage from './pages/NotificationDetailPage';
-import Notifikasi from './pages/Notifikasi';
-import EditProfile from './pages/EditProfile';
-import Settings from './pages/Settings';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Beranda from './pages/Beranda'
+import DetailPost from './pages/DetailPost'
+import Notifikasi from './pages/Notifications'
+import EditProfile from './pages/EditProfile'
+import ProtectedRoute from './components/ProtectedRoutes'
+import GuestRoute from './components/GuestRoute'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Toaster position="top-center" richColors />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        
-        {/* Protected routes */}
-        <Route path="/" element={<ProtectedRoute><Beranda /></ProtectedRoute>} />
-        <Route path="/post/:id" element={<ProtectedRoute><PostDetailPage /></ProtectedRoute>} />
-        <Route path="/notification/:notificationId" element={<ProtectedRoute><NotificationDetailPage /></ProtectedRoute>} />
-        <Route path="/notifikasi" element={<ProtectedRoute><Notifikasi /></ProtectedRoute>} />
-        <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-        
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
-  );
+    <Routes>
+      {/* Guest only */}
+      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+      <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+
+      {/* Protected */}
+      <Route path="/" element={<ProtectedRoute><Beranda /></ProtectedRoute>} />
+      <Route path="/posts/:id" element={<ProtectedRoute><DetailPost /></ProtectedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Notifikasi /></ProtectedRoute>} />
+      <Route path="/profile/edit" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  )
 }
 
-export default App;
+export default App

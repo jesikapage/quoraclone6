@@ -1,44 +1,30 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl?: string;
-};
+interface User {
+  id: string
+  name: string
+  email: string
+  avatar: string | null
+}
 
-type AuthStore = {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  setAuth: (user: User, token: string) => void;
-  logout: () => void;
-};
+interface AuthStore {
+  user: User | null
+  token: string | null
+  setAuth: (user: User, token: string) => void
+  logout: () => void
+  isAuthenticated: () => boolean
+}
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       token: null,
-      isAuthenticated: false,
-
-      setAuth: (user, token) =>
-        set({
-          user,
-          token,
-          isAuthenticated: true,
-        }),
-
-      logout: () =>
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-        }),
+      setAuth: (user, token) => set({ user, token }),
+      logout: () => set({ user: null, token: null }),
+      isAuthenticated: () => !!get().token,
     }),
-    {
-      name: "quora-auth-storage", // Disimpan di localStorage otomatis
-    }
+    { name: 'auth-storage' }
   )
-);
+)

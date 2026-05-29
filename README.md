@@ -1,2 +1,15 @@
-Link Google Docs Tugas Besar PPWL : https://docs.google.com/document/d/1YCzmtTmqRLJ8lRU5hObdL0xYjAeRoccdNKufT_7xYMc/edit?tab=t.dj6nviz77lor
+# social-media-app
 
+To install dependencies:
+
+```bash
+bun install
+```
+
+To run:
+
+```bash
+bun run index.ts
+```
+
+This project was created using `bun init` in bun v1.3.8. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
