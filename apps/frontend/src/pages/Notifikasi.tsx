@@ -199,7 +199,7 @@ export default function Notifikasi() {
                 className="flex items-center gap-1 hover:bg-[#333] rounded-[3px] p-1 transition"
               >
                 <img
-                  src={user?.avatarUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
+                  src={user?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.name}`}
                   alt="avatar"
                   className="w-8 h-8 rounded-full border border-[#444]"
                 />

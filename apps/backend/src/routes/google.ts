@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { OAuth2Client } from "google-auth-library";
-import { prisma } from "../lib/prisma";
+import prisma from "../lib/prisma";
 import { jwt } from "@elysiajs/jwt";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

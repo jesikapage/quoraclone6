@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { OAuth2Client } from "google-auth-library";
+import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -31,7 +32,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
         }
 
         console.log("🔑 [BACKEND] Melakukan hashing password...");
-        const hashedPassword = await Bun.password.hash(password);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
         console.log("💾 [BACKEND] Mencoba menyimpan user ke Neon Cloud...");
         const user = await prisma.user.create({
@@ -70,7 +71,7 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
         return { error: "Email atau password salah" };
       }
 
-      const valid = await Bun.password.verify(password, user.password);
+      const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         set.status = 401;
         return { error: "Email atau password salah" };
@@ -98,7 +99,6 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     async ({ body, set, jwt }) => {
       const { token } = body;
 
-      // Verifikasi ID token dari Google
       let payload: any;
       try {
         const ticket = await googleClient.verifyIdToken({
@@ -118,13 +118,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
 
       const { sub: googleId, email, name, picture: avatar } = payload;
 
-      // Cari user berdasarkan googleId atau email
       let user = await prisma.user.findFirst({
         where: { OR: [{ googleId }, { email }] },
       });
 
       if (user) {
-        // User sudah ada — update googleId & avatar kalau belum terisi
         user = await prisma.user.update({
           where: { id: user.id },
           data: {
@@ -133,7 +131,6 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           },
         });
       } else {
-        // User baru — buat akun otomatis
         user = await prisma.user.create({
           data: {
             name: name ?? email.split("@")[0],

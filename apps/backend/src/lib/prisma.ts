@@ -1,17 +1,14 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = globalThis as unknown as { 
-  prisma: PrismaClient | undefined 
-};
+const connectionString = process.env.DATABASE_URL ||
+  "postgresql://admin:secret123@localhost:5432/socialmedia";
 
-// Kosongkan saja parameternya. 
-// Prisma sudah sangat pintar untuk otomatis mencari process.env.DATABASE_URL
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString,
+  max: 1,
+});
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
-
-console.log("🚀 Server terhubung 100% ke Database Neon (Mode Standar)!");
+const prisma = new PrismaClient({ adapter });
 
 export default prisma;

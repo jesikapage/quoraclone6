@@ -1,0 +1,53 @@
+org: ppwlteam6quora
+app: kurakura-backend
+service: kurakura-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-southeast-1
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: ${ssm:/kurakura/DATABASE_URL}
+    JWT_SECRET: ${ssm:/kurakura/JWT_SECRET}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+          Resource: "arn:aws:ssm:ap-southeast-1:620830100870:parameter/kurakura/*"
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: "arn:aws:s3:::kurakura-images/*"
+
+package:
+  patterns:
+    - "!node_modules/.prisma/client/libquery_engine-windows*"
+    - "node_modules/.prisma/client/libquery_engine-rhel*"
+    - "node_modules/@prisma/client/**"
+    - "node_modules/.prisma/**"
+
+functions:
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+      - httpApi:
+          path: /
+          method: ANY
+    timeout: 30
+    memorySize: 512
+
+build:
+  esbuild:
+    bundle: true
+    minify: false
+    target: node20
+    format: cjs
+    sourcemap: false

@@ -1,7 +1,7 @@
 import { useAuthStore } from "../stores/auth.store";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
-  Home, BookOpen, PenLine, Rocket, Bell,
+  Home, Bell,
   Search, ChevronDown, Globe, Plus, X, Menu,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -23,11 +23,8 @@ const C = {
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 const NAV_ITEMS = [
-  { to: "/",           icon: Home,     label: "Beranda" },
-  { to: "/mengikuti",  icon: BookOpen, label: "Mengikuti" },
-  { to: "/jawab",      icon: PenLine,  label: "Jawab" },
-  { to: "/ruang",      icon: Rocket,   label: "Ruang" },
-  { to: "/notifikasi", icon: Bell,     label: "Notifikasi" },
+  { to: "/",              icon: Home, label: "Beranda" },
+  { to: "/notifications", icon: Bell, label: "Notifikasi" },
 ];
 
 const SEARCH_DATA = [
@@ -63,7 +60,6 @@ function highlightMatch(text: string, query: string): React.ReactNode {
   );
 }
 
-// ── Search Dropdown ────────────────────────────────────────────────────────
 function SearchBar({ search, onSearchChange, onClose }: {
   search: string;
   onSearchChange: (v: string) => void;
@@ -183,7 +179,6 @@ function SearchBar({ search, onSearchChange, onClose }: {
   );
 }
 
-// ── Main Navbar ──────────────────────────────────────────────────────────────
 interface NavbarProps {
   search: string;
   onSearchChange: (value: string) => void;
@@ -199,7 +194,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
   const user = authUser ?? { name: "Guest", avatar: null };
   const initials = user.name.split(" ").map((w: string) => w[0] || "").slice(0, 2).join("").toUpperCase() || "?";
 
-  // Tentukan nav aktif berdasarkan URL saat ini
   const activeNav = NAV_ITEMS.find(item =>
     item.to === "/"
       ? location.pathname === "/"
@@ -214,12 +208,10 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
       <header style={{ position: "sticky", top: 0, zIndex: 100, background: C.surface, borderBottom: `1px solid ${C.border}`, height: 52 }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 12px", height: "100%", display: "flex", alignItems: "center", gap: 4 }}>
 
-          {/* Logo */}
           <Link to="/" style={{ color: "#b92b27", fontWeight: 900, fontSize: 24, textDecoration: "none", letterSpacing: "-0.5px", flexShrink: 0, fontFamily: "Georgia, 'Times New Roman', serif", lineHeight: 1, marginRight: 4 }}>
             Qoora
           </Link>
 
-          {/* Nav items — hidden on mobile */}
           <nav className="nav-desktop" style={{ display: "flex", alignItems: "center", height: 52 }}>
             {NAV_ITEMS.map((item) => {
               const isActive = activeNav === item.to;
@@ -247,12 +239,10 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             })}
           </nav>
 
-          {/* Search — hidden on mobile when not active */}
           <div className="search-desktop" style={{ flex: 1, maxWidth: 380, minWidth: 0, marginLeft: 8 }}>
             <SearchBar search={search} onSearchChange={onSearchChange} />
           </div>
 
-          {/* Mobile: search icon */}
           <button
             className="search-mobile-btn"
             onClick={() => setMobileSearchOpen(true)}
@@ -261,9 +251,7 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             <Search size={20} />
           </button>
 
-          {/* Right side */}
           <div className="right-desktop" style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-            {/* Avatar */}
             <div
               onClick={() => navigate("/profile/edit")}
               style={{ width: 30, height: 30, borderRadius: "50%", border: `1px solid ${C.border}`, cursor: "pointer", overflow: "hidden", flexShrink: 0, background: "#3A7AEF", display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -281,14 +269,11 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             ) : (
               <button onClick={() => navigate("/login")} style={{ fontFamily: FONT, fontSize: 13, fontWeight: 500, color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3, padding: "4px 8px", background: C.surface, cursor: "pointer" }}>Masuk</button>
             )}
-            <button
-              style={{ display: "flex", alignItems: "center", gap: 3, background: C.red, color: "#fff", border: "none", borderRadius: 3, padding: "5px 10px", fontFamily: FONT, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}
-            >
+            <button style={{ display: "flex", alignItems: "center", gap: 3, background: C.red, color: "#fff", border: "none", borderRadius: 3, padding: "5px 10px", fontFamily: FONT, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}>
               Tambah <ChevronDown size={12} />
             </button>
           </div>
 
-          {/* Mobile: hamburger */}
           <button
             className="mobile-menu-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -299,17 +284,14 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
         </div>
       </header>
 
-      {/* Mobile search overlay */}
       {mobileSearchOpen && (
         <div className="mobile-search-overlay" style={{ position: "fixed", top: 52, left: 0, right: 0, background: C.surface, borderBottom: `1px solid ${C.border}`, padding: "10px 12px", zIndex: 99 }}>
           <SearchBar search={search} onSearchChange={onSearchChange} onClose={() => setMobileSearchOpen(false)} />
         </div>
       )}
 
-      {/* Mobile menu drawer */}
       {mobileMenuOpen && (
         <div className="mobile-drawer" style={{ position: "fixed", top: 52, left: 0, right: 0, bottom: 0, background: C.surface, zIndex: 98, overflowY: "auto" }}>
-          {/* Avatar + nama */}
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 16px 12px", borderBottom: `1px solid ${C.border}` }}>
             <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#3A7AEF", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
               {user.avatar
@@ -323,7 +305,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             </div>
           </div>
 
-          {/* Nav items */}
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeNav === item.to;
@@ -339,7 +320,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             );
           })}
 
-          {/* Divider + aksi */}
           <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
             <button
               onClick={() => { navigate("/profile/edit"); setMobileMenuOpen(false); }}
@@ -347,9 +327,7 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             >
               👤 Edit Profil
             </button>
-            <button
-              style={{ display: "flex", alignItems: "center", gap: 4, background: C.red, color: "#fff", border: "none", borderRadius: 4, padding: "10px 16px", fontFamily: FONT, fontSize: 14, fontWeight: 600, cursor: "pointer", justifyContent: "center", marginTop: 4 }}
-            >
+            <button style={{ display: "flex", alignItems: "center", gap: 4, background: C.red, color: "#fff", border: "none", borderRadius: 4, padding: "10px 16px", fontFamily: FONT, fontSize: 14, fontWeight: 600, cursor: "pointer", justifyContent: "center", marginTop: 4 }}>
               <Plus size={16} /> Tambah Pertanyaan
             </button>
             {authUser
@@ -361,15 +339,12 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
       )}
 
       <style>{`
-        /* Desktop (≥768px): tampilkan semua elemen navbar */
         .nav-desktop { display: flex !important; }
         .search-desktop { display: block !important; }
         .right-desktop { display: flex !important; }
         .search-mobile-btn { display: none !important; }
         .mobile-menu-btn { display: none !important; }
         .name-desktop { display: inline !important; }
-
-        /* Mobile (<768px): sembunyikan desktop elements, tampilkan mobile */
         @media (max-width: 767px) {
           .nav-desktop { display: none !important; }
           .search-desktop { display: none !important; }
@@ -377,8 +352,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
           .search-mobile-btn { display: flex !important; }
           .mobile-menu-btn { display: flex !important; }
         }
-
-        /* Tablet (768px – 1023px): sembunyikan nama user dan kurangi elemen */
         @media (min-width: 768px) and (max-width: 1023px) {
           .name-desktop { display: none !important; }
         }

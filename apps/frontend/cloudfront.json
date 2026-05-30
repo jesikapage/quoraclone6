@@ -1,0 +1,40 @@
+{
+  "CallerReference": "kurakura-frontend-2026",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "kurakura-s3-origin",
+        "DomainName": "kurakura-frontend.s3-website-ap-southeast-1.amazonaws.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only"
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "kurakura-s3-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "Compress": true,
+    "AllowedMethods": {
+      "Quantity": 2,
+      "Items": ["GET", "HEAD"]
+    }
+  },
+  "CustomErrorResponses": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "ErrorCode": 404,
+        "ResponseCode": "200",
+        "ResponsePagePath": "/index.html"
+      }
+    ]
+  },
+  "Comment": "kurakura-frontend",
+  "Enabled": true,
+  "DefaultRootObject": "index.html"
+}

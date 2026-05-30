@@ -6,6 +6,9 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1057.0",
+    "@aws-sdk/s3-request-presigner": "^3.1057.0",
+    "@codegenie/serverless-express": "^5.0.0",
     "@elysiajs/bearer": "latest",
     "@elysiajs/cors": "latest",
     "@elysiajs/jwt": "latest",
@@ -13,6 +16,7 @@
     "@prisma/adapter-neon": "^7.8.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "6",
+    "bcryptjs": "^3.0.3",
     "dotenv": "latest",
     "elysia": "latest",
     "google-auth-library": "^10.6.2",
@@ -22,8 +26,11 @@
     "ws": "^8.21.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/bun": "latest",
     "@types/ws": "^8.18.1",
-    "dotenv-cli": "^11.0.0"
+    "dotenv-cli": "^11.0.0",
+    "esbuild": "^0.28.0",
+    "serverless-esbuild": "^1.57.2"
   }
 }

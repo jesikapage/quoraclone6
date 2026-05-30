@@ -1,13 +1,13 @@
 import { Elysia, t } from "elysia";
 import { jwt } from "@elysiajs/jwt";
 import { bearer } from "@elysiajs/bearer";
+import bcrypt from "bcryptjs";
 import prisma from "../lib/prisma";
 
 export const userRoutes = new Elysia({ prefix: "/users" })
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "fallback_secret" }))
   .use(bearer())
 
-  // GET semua user (dev only, pakai secret key)
   .get("/", async ({ query, set }) => {
     if (query.key !== "your-secret-key") {
       set.status = 401;
@@ -19,7 +19,6 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     return users;
   })
 
-  // GET profile user yang sedang login
   .get("/me", async ({ bearer, jwt, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
@@ -31,7 +30,6 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     return user;
   })
 
-  // PUT edit profile
   .put("/profile", async ({ bearer, jwt, body, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
@@ -43,7 +41,6 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     if (body.avatar) updateData.avatar = body.avatar;
     if (body.email) updateData.email = body.email;
 
-    // Kalau ganti password
     if (body.newPassword) {
       if (!body.currentPassword) {
         set.status = 400;
@@ -54,12 +51,12 @@ export const userRoutes = new Elysia({ prefix: "/users" })
         set.status = 400;
         return { error: "Akun ini tidak menggunakan password" };
       }
-      const valid = await Bun.password.verify(body.currentPassword, user.password);
+      const valid = await bcrypt.compare(body.currentPassword, user.password);
       if (!valid) {
         set.status = 400;
         return { error: "Password lama salah" };
       }
-      updateData.password = await Bun.password.hash(body.newPassword);
+      updateData.password = await bcrypt.hash(body.newPassword, 10);
     }
 
     const updated = await prisma.user.update({
