@@ -137,13 +137,13 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
       onMouseLeave={(e) => { if (!isEditing) (e.currentTarget as HTMLElement).style.background = C.surface; }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", minWidth: 0, flex: 1 }}>
           <img
             src={post.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${post.user.name}`}
             alt={post.user.name}
             style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
           />
-          <div style={{ display: "flex", flexDirection: "column", marginTop: "-2px" }}>
+          <div style={{ display: "flex", flexDirection: "column", marginTop: "-2px", minWidth: 0, flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
               <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 13, color: C.textPrimary }}>
                 {post.user.name}
@@ -155,14 +155,14 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
                 · Ikuti
               </span>
             </div>
-            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "400px" }}>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {post.user.credential || 'Pengguna Qoora'} · {timeAgo(post.createdAt)}
             </p>
           </div>
         </div>
 
         {isOwner ? (
-          <div style={{ position: "relative" }}>
+          <div style={{ position: "relative", flexShrink: 0 }}>
             <button
               onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
               style={{ background: "transparent", border: "none", color: C.textSecondary, cursor: "pointer", padding: "4px" }}
@@ -189,7 +189,7 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
         ) : (
           <button
             onClick={(e) => e.stopPropagation()}
-            style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: "4px" }}
+            style={{ background: "transparent", border: "none", color: C.textMuted, cursor: "pointer", padding: "4px", flexShrink: 0 }}
           >
             <X size={18} />
           </button>
@@ -202,7 +202,7 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
             autoFocus
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            style={{ width: "100%", minHeight: 80, background: "#181818", border: `1px solid ${C.blue}`, outline: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 15, padding: "8px 12px", borderRadius: 4, resize: "vertical" }}
+            style={{ width: "100%", minHeight: 80, background: "#181818", border: `1px solid ${C.blue}`, outline: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 15, padding: "8px 12px", borderRadius: 4, resize: "vertical", boxSizing: "border-box" }}
           />
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
             <button
@@ -234,13 +234,14 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
         />
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", background: "#2B2D2D", borderRadius: 100, overflow: "hidden", border: `1px solid ${C.border}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4, flexWrap: "nowrap", overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", background: "#2B2D2D", borderRadius: 100, overflow: "hidden", border: `1px solid ${C.border}`, flexShrink: 0 }}>
           <button
             onClick={handleLike}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: liked ? "#3A7AEF20" : "transparent", color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 13, fontWeight: 600, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer" }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: liked ? "#3A7AEF20" : "transparent", color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 13, fontWeight: 600, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer", whiteSpace: "nowrap" }}
           >
-            <ThumbsUp size={16} fill={liked ? C.blue : "none"} /> Dukung · {likeCount}
+            <ThumbsUp size={16} fill={liked ? C.blue : "none"} />
+            <span className="action-label"> Dukung · {likeCount}</span>
           </button>
           <button
             onClick={(e) => e.stopPropagation()}
@@ -250,20 +251,25 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary }}>
-          <MessageCircle size={16} /> {post._count?.comments || 0} Komentar
-        </div>
-
         <button
           onClick={(e) => e.stopPropagation()}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
         >
-          <Repeat2 size={16} /> {Math.floor(Math.random() * 20)}
+          <MessageCircle size={16} />
+          <span className="action-label"> {post._count?.comments || 0}</span>
         </button>
 
         <button
           onClick={(e) => e.stopPropagation()}
-          style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px" }}
+          style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+        >
+          <Repeat2 size={16} />
+          <span className="action-label"> {Math.floor(Math.random() * 20)}</span>
+        </button>
+
+        <button
+          onClick={(e) => e.stopPropagation()}
+          style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px", flexShrink: 0 }}
         >
           {!isOwner && <MoreHorizontal size={18} />}
         </button>
@@ -391,8 +397,8 @@ export default function Beranda() {
         }
         input::placeholder { color: #87898c; }
         textarea::placeholder { color: #87898c; }
-        @media (max-width: 640px) {
-          .feed-card { border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+        @media (max-width: 480px) {
+          .action-label { display: none; }
         }
       `}</style>
     </div>

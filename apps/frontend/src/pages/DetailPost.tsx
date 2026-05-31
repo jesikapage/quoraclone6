@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
-import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X, Send } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X } from 'lucide-react';
 
-// Palet warna tersinkronisasi dengan Beranda.tsx
 const C = {
   bg: "#181818",
   surface: "#242424",
@@ -109,21 +108,21 @@ export default function DetailPost() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, padding: '24px 16px' }}>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT, padding: '24px 12px' }}>
       <div style={{ maxWidth: 650, margin: '0 auto' }}>
-        
+
         {/* Post Container */}
-        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: "16px 20px", marginBottom: 16 }}>
-          
-          {/* Header Postingan + Tombol X */}
+        <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: "16px", marginBottom: 16 }}>
+
+          {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', minWidth: 0, flex: 1 }}>
               <img
                 src={post.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${post.user.name}`}
                 alt={post.user.name}
-                style={{ width: 44, height: 44, borderRadius: '50%', border: `1px solid ${C.border}`, objectFit: 'cover' }}
+                style={{ width: 44, height: 44, borderRadius: '50%', border: `1px solid ${C.border}`, objectFit: 'cover', flexShrink: 0 }}
               />
-              <div style={{ display: 'flex', flexDirection: 'column', marginTop: '-2px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', marginTop: '-2px', minWidth: 0, flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
                   <span style={{ fontFamily: FONT, fontWeight: 700, fontSize: 14, color: C.textPrimary }}>
                     {post.user.name}
@@ -132,21 +131,21 @@ export default function DetailPost() {
                     · Ikuti
                   </span>
                 </div>
-                <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "400px" }}>
+                <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {post.user.credential || 'Pengguna Qoora'} · {timeAgo(post.createdAt)}
                 </p>
               </div>
             </div>
-            <button 
-              onClick={() => navigate(-1)} 
-              style={{ background: 'transparent', border: 'none', color: C.textMuted, cursor: 'pointer', padding: 4 }}
+            <button
+              onClick={() => navigate(-1)}
+              style={{ background: 'transparent', border: 'none', color: C.textMuted, cursor: 'pointer', padding: 4, flexShrink: 0 }}
               title="Tutup Postingan"
             >
               <X size={22} />
             </button>
           </div>
 
-          {/* Konten Postingan (Menjulang ke bawah tanpa terpotong) */}
+          {/* Konten */}
           <p style={{ color: C.textPrimary, fontSize: 16, lineHeight: 1.6, whiteSpace: 'pre-wrap', margin: "0 0 16px 0", wordBreak: 'break-word' }}>
             {post.content}
           </p>
@@ -155,29 +154,32 @@ export default function DetailPost() {
             <img src={post.imageUrl} alt="post" style={{ width: '100%', maxHeight: 600, objectFit: 'contain', borderRadius: 4, marginBottom: 16, border: `1px solid ${C.border}` }} />
           )}
 
-          {/* Action Bar Kapsul (Sama persis dengan Beranda) */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
-            <div style={{ display: "flex", alignItems: "center", background: "#2B2D2D", borderRadius: 100, overflow: "hidden", border: `1px solid ${C.border}` }}>
+          {/* Action Bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 16, borderTop: `1px solid ${C.border}`, flexWrap: "nowrap" }}>
+            <div style={{ display: "flex", alignItems: "center", background: "#2B2D2D", borderRadius: 100, overflow: "hidden", border: `1px solid ${C.border}`, flexShrink: 0 }}>
               <button
                 onClick={handleLike}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: liked ? "#3A7AEF20" : "transparent", color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 13, fontWeight: 600, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer" }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: liked ? "#3A7AEF20" : "transparent", color: liked ? C.blue : C.textSecondary, fontFamily: FONT, fontSize: 13, fontWeight: 600, border: "none", borderRight: `1px solid ${C.border}`, cursor: "pointer", whiteSpace: "nowrap" }}
               >
-                <ThumbsUp size={16} fill={liked ? C.blue : "none"} /> Dukung · {likeCount}
+                <ThumbsUp size={16} fill={liked ? C.blue : "none"} />
+                <span className="dp-action-label"> Dukung · {likeCount}</span>
               </button>
               <button style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "6px 10px", background: "transparent", color: C.textSecondary, border: "none", cursor: "pointer" }}>
                 <ThumbsDown size={16} />
               </button>
             </div>
 
-            <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer" }}>
-              <MessageCircle size={16} /> {post.comments.length}
+            <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
+              <MessageCircle size={16} />
+              <span className="dp-action-label"> {post.comments.length}</span>
             </button>
 
-            <button style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer" }}>
-              <Repeat2 size={16} /> {Math.floor(Math.random() * 100)}
+            <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
+              <Repeat2 size={16} />
+              <span className="dp-action-label"> {Math.floor(Math.random() * 100)}</span>
             </button>
 
-            <button style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px" }}>
+            <button style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px", flexShrink: 0 }}>
               <MoreHorizontal size={18} />
             </button>
           </div>
@@ -186,12 +188,12 @@ export default function DetailPost() {
         {/* Kotak Tulis Komentar */}
         <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4, padding: "12px 16px", marginBottom: 16 }}>
           <form onSubmit={handleComment} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-            <img 
-              src={currentUserAvatar} 
-              alt="You" 
-              style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} 
+            <img
+              src={currentUserAvatar}
+              alt="You"
+              style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
             />
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
@@ -203,11 +205,11 @@ export default function DetailPost() {
                   target.style.height = 'auto';
                   target.style.height = `${target.scrollHeight}px`;
                 }}
-                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid ${C.border}`, padding: '8px 0', color: C.textPrimary, fontSize: 15, resize: 'none', outline: 'none', fontFamily: FONT, minHeight: '38px' }}
+                style={{ width: '100%', background: 'transparent', border: 'none', borderBottom: `1px solid ${C.border}`, padding: '8px 0', color: C.textPrimary, fontSize: 15, resize: 'none', outline: 'none', fontFamily: FONT, minHeight: '38px', boxSizing: 'border-box' }}
               />
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="submit" disabled={isSubmitting || !newComment.trim()}
-                  style={{ background: isSubmitting || !newComment.trim() ? '#444' : C.blue, color: isSubmitting || !newComment.trim() ? '#888' : '#fff', border: 'none', borderRadius: 100, padding: '6px 16px', fontSize: 14, fontWeight: 600, cursor: isSubmitting || !newComment.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  style={{ background: isSubmitting || !newComment.trim() ? '#444' : C.blue, color: isSubmitting || !newComment.trim() ? '#888' : '#fff', border: 'none', borderRadius: 100, padding: '6px 16px', fontSize: 14, fontWeight: 600, cursor: isSubmitting || !newComment.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
                   Tambahkan Komentar
                 </button>
               </div>
@@ -230,14 +232,14 @@ export default function DetailPost() {
                     <img
                       src={comment.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${comment.user.name}`}
                       alt={comment.user.name}
-                      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }}
+                      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                     />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
                         <span style={{ color: C.textPrimary, fontWeight: 700, fontSize: 14 }}>{comment.user.name}</span>
                         <span style={{ color: C.textMuted, fontSize: 13 }}>· {timeAgo(comment.createdAt)}</span>
                       </div>
-                      <p style={{ color: C.textPrimary, fontSize: 15, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                      <p style={{ color: C.textPrimary, fontSize: 15, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                         {comment.content}
                       </p>
                     </div>
@@ -249,6 +251,12 @@ export default function DetailPost() {
         </div>
 
       </div>
+
+      <style>{`
+        @media (max-width: 480px) {
+          .dp-action-label { display: none; }
+        }
+      `}</style>
     </div>
   );
 }
