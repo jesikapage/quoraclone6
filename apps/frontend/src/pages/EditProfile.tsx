@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
 import Navbar from '../components/Navbar';
 
-// ── Design tokens ────────────────────────────────────────────────────────────
 const C = {
   bg: '#181818',
   surface: '#242424',
@@ -20,7 +19,6 @@ const C = {
 };
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
-// ── Draggable Avatar ──────────────────────────────────────────────────────────
 interface DraggableAvatarProps {
   src: string | null;
   initials: string;
@@ -109,7 +107,6 @@ function DraggableAvatar({ src, initials, size = 80, offsetX, offsetY, onOffsetC
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
 const EditProfile = () => {
   const navigate = useNavigate();
   const { user, setAuth, token } = useAuthStore();
@@ -117,17 +114,21 @@ const EditProfile = () => {
   const nameParts = (user?.name || '').split(' ');
   const [firstName, setFirstName] = useState(nameParts[0] || '');
   const [lastName, setLastName] = useState(nameParts.slice(1).join(' ') || '');
-  const [credential, setCredential] = useState('');
-  const [bio, setBio] = useState('');
+  const [credential, setCredential] = useState(user?.credential || '');
+  const [bio, setBio] = useState(user?.bio || '');
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
   const [avatarOffsetX, setAvatarOffsetX] = useState(0);
   const [avatarOffsetY, setAvatarOffsetY] = useState(0);
 
-  // Sinkron preview dengan store (misal: dibuka ulang setelah simpan)
   useEffect(() => {
     setAvatarPreview(user?.avatar || null);
   }, [user?.avatar]);
+
+  useEffect(() => {
+    setCredential(user?.credential || '');
+    setBio(user?.bio || '');
+  }, [user?.credential, user?.bio]);
 
   const [currPass, setCurrPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -159,7 +160,6 @@ const EditProfile = () => {
       setAvatarPreview(dataUrl);
       setAvatarOffsetX(0);
       setAvatarOffsetY(0);
-      // Update Navbar & semua komponen secara langsung (live)
       if (user && token) setAuth({ ...user, avatar: dataUrl }, token);
     };
     reader.readAsDataURL(file);
@@ -170,7 +170,6 @@ const EditProfile = () => {
     setAvatarOffsetX(0);
     setAvatarOffsetY(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    // Kembalikan avatar ke null di store → Navbar tampilkan inisial
     if (user && token) setAuth({ ...user, avatar: null }, token);
   }
 
@@ -195,12 +194,22 @@ const EditProfile = () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: fullName, avatar: avatarPreview || undefined }),
+        body: JSON.stringify({
+          name: fullName,
+          avatar: avatarPreview || undefined,
+          credential: credential || undefined,
+          bio: bio || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) { showAlertMsg('error', data.error || 'Gagal menyimpan profil.'); return; }
-      // Update auth store → Navbar & seluruh app ikut update
-      if (user) setAuth({ ...user, name: fullName, avatar: avatarPreview || user.avatar }, token);
+      if (user) setAuth({
+        ...user,
+        name: fullName,
+        avatar: avatarPreview || user.avatar,
+        credential: credential || user.credential,
+        bio: bio || user.bio,
+      }, token);
       showAlertMsg('success', 'Profil berhasil disimpan!');
     } catch {
       showAlertMsg('error', 'Koneksi ke server gagal.');
@@ -242,15 +251,12 @@ const EditProfile = () => {
 
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
-      {/* Navbar sama dengan Beranda */}
       <Navbar search={search} onSearchChange={setSearch} />
 
       <div style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 12px', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
-        {/* ── Sidebar kiri ── */}
         <aside className="ep-sidebar" style={{ width: 220, flexShrink: 0 }}>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3, overflow: 'hidden' }}>
-            {/* Preview profil */}
             <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 10 }}>
               <DraggableAvatar
                 src={avatarPreview} initials={initials} size={40}
@@ -267,7 +273,6 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {/* Tab sidebar */}
             {([
               { key: 'profile', label: 'Edit Profil', icon: '👤' },
               { key: 'account', label: 'Keamanan Akun', icon: '🔒' },
@@ -297,10 +302,8 @@ const EditProfile = () => {
           </div>
         </aside>
 
-        {/* ── Konten utama ── */}
         <div style={{ flex: 1, minWidth: 0, maxWidth: 700 }}>
 
-          {/* Alert */}
           {alert && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
@@ -313,7 +316,6 @@ const EditProfile = () => {
             </div>
           )}
 
-          {/* ── Tab Edit Profil ── */}
           {activeTab === 'profile' && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3 }}>
               <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
@@ -322,7 +324,6 @@ const EditProfile = () => {
               </div>
 
               <form onSubmit={handleSaveProfile} style={{ padding: '20px 24px' }}>
-                {/* Avatar */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 24, paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <DraggableAvatar
@@ -330,7 +331,6 @@ const EditProfile = () => {
                       offsetX={avatarOffsetX} offsetY={avatarOffsetY}
                       onOffsetChange={(x, y) => { setAvatarOffsetX(x); setAvatarOffsetY(y); }}
                     />
-                    {/* Hover overlay */}
                     <div
                       className="ep-avatar-overlay"
                       onClick={() => fileInputRef.current?.click()}
@@ -378,7 +378,6 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* Nama */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
@@ -392,7 +391,6 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* Kredensial */}
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>Kredensial</label>
                   <input type="text" value={credential} onChange={(e) => setCredential(e.target.value)} placeholder="Contoh: Mahasiswa Informatika UNTAN" maxLength={60} style={inp} onFocus={focusBorder} onBlur={blurBorder} />
@@ -402,7 +400,6 @@ const EditProfile = () => {
                   </div>
                 </div>
 
-                {/* Bio */}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>Tentang Saya</label>
                   <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Ceritakan tentang dirimu..." rows={4}
@@ -411,7 +408,6 @@ const EditProfile = () => {
                   />
                 </div>
 
-                {/* Actions */}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
                   <button type="button" onClick={() => navigate('/')} style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}>
                     Batal
@@ -428,7 +424,6 @@ const EditProfile = () => {
             </div>
           )}
 
-          {/* ── Tab Keamanan Akun ── */}
           {activeTab === 'account' && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 3 }}>
               <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
@@ -437,7 +432,6 @@ const EditProfile = () => {
               </div>
 
               <form onSubmit={handleSavePassword} style={{ padding: '20px 24px' }}>
-                {/* Password saat ini */}
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Password Saat Ini <span style={{ color: C.red }}>*</span>
@@ -452,7 +446,6 @@ const EditProfile = () => {
 
                 <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '0 0 20px' }} />
 
-                {/* Password baru */}
                 <div style={{ marginBottom: 20 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Password Baru <span style={{ color: C.red }}>*</span>
@@ -475,7 +468,6 @@ const EditProfile = () => {
                   )}
                 </div>
 
-                {/* Konfirmasi password */}
                 <div style={{ marginBottom: 24 }}>
                   <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: C.textPrimary, marginBottom: 6 }}>
                     Konfirmasi Password Baru <span style={{ color: C.red }}>*</span>

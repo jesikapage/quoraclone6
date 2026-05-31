@@ -29,7 +29,7 @@ function timeAgo(dateStr: string) {
 
 type Post = {
   id: string; content: string; imageUrl: string | null; createdAt: string;
-  user: { id: string; name: string; avatar: string | null };
+  user: { id: string; name: string; avatar: string | null; credential: string | null };
   _count: { likes: number };
   comments: Comment[];
 };
@@ -132,8 +132,8 @@ export default function DetailPost() {
                     · Ikuti
                   </span>
                 </div>
-                <p style={{ color: C.textSecondary, fontSize: 13, margin: "2px 0 0 0" }}>
-                  S1 di Ilmu Komputer, Universitas Tanjungpura · {timeAgo(post.createdAt)}
+                <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "400px" }}>
+                  {post.user.credential || 'Pengguna Qoora'} · {timeAgo(post.createdAt)}
                 </p>
               </div>
             </div>

@@ -15,6 +15,7 @@ type Post = {
     id: string;
     name: string;
     avatar: string | null;
+    credential: string | null;
   };
   _count?: {
     comments: number;
@@ -155,7 +156,7 @@ function PostCard({ post, currentUser, fetchPosts }: { post: Post; currentUser: 
               </span>
             </div>
             <p style={{ fontFamily: FONT, fontSize: 13, color: C.textSecondary, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "400px" }}>
-              S1 di Ilmu Komputer, Universitas Tanjungpura · {timeAgo(post.createdAt)}
+              {post.user.credential || 'Pengguna Qoora'} · {timeAgo(post.createdAt)}
             </p>
           </div>
         </div>

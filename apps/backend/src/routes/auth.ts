@@ -14,14 +14,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     })
   )
 
-  // ── Register ──────────────────────────────────────────────
   .post(
     "/register",
     async ({ body, set }) => {
       console.log("📥 [BACKEND] Ada request register masuk!", body);
-
       const { name, email, password } = body;
-
       try {
         console.log("🔍 [BACKEND] Memeriksa email di database...");
         const existing = await prisma.user.findUnique({ where: { email } });
@@ -30,19 +27,16 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           set.status = 400;
           return { error: "Email sudah digunakan" };
         }
-
         console.log("🔑 [BACKEND] Melakukan hashing password...");
         const hashedPassword = await bcrypt.hash(password, 10);
-
         console.log("💾 [BACKEND] Mencoba menyimpan user ke Neon Cloud...");
         const user = await prisma.user.create({
           data: { name, email, password: hashedPassword },
         });
-
         console.log("✅ [BACKEND] User berhasil disimpan!", user.id);
         return {
           message: "Registrasi berhasil",
-          user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+          user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar, credential: user.credential, bio: user.bio },
         };
       } catch (dbError: any) {
         console.error("🔥 [BACKEND] ERROR DATABASE TERJADI:", dbError);
@@ -59,30 +53,25 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     }
   )
 
-  // ── Login ─────────────────────────────────────────────────
   .post(
     "/login",
     async ({ body, set, jwt }) => {
       const { email, password } = body;
-
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user || !user.password) {
         set.status = 401;
         return { error: "Email atau password salah" };
       }
-
       const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         set.status = 401;
         return { error: "Email atau password salah" };
       }
-
       const token = await jwt.sign({ userId: user.id });
-
       return {
         message: "Login berhasil",
         token,
-        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar, credential: user.credential, bio: user.bio },
       };
     },
     {
@@ -93,12 +82,10 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
     }
   )
 
-  // ── Google OAuth ──────────────────────────────────────────
   .post(
     "/google",
     async ({ body, set, jwt }) => {
       const { token } = body;
-
       let payload: any;
       try {
         const ticket = await googleClient.verifyIdToken({
@@ -110,18 +97,14 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
         set.status = 401;
         return { error: "Token Google tidak valid." };
       }
-
       if (!payload?.email) {
         set.status = 400;
         return { error: "Tidak dapat mengambil data dari Google." };
       }
-
       const { sub: googleId, email, name, picture: avatar } = payload;
-
       let user = await prisma.user.findFirst({
         where: { OR: [{ googleId }, { email }] },
       });
-
       if (user) {
         user = await prisma.user.update({
           where: { id: user.id },
@@ -141,13 +124,11 @@ export const authRoutes = new Elysia({ prefix: "/auth" })
           },
         });
       }
-
       const jwtToken = await jwt.sign({ userId: user.id });
-
       return {
         message: "Login Google berhasil",
         token: jwtToken,
-        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar },
+        user: { id: user.id, name: user.name, email: user.email, avatar: user.avatar, credential: user.credential, bio: user.bio },
       };
     },
     {

@@ -6,6 +6,8 @@ interface User {
   name: string
   email: string
   avatar: string | null
+  credential: string | null
+  bio: string | null
 }
 
 interface AuthStore {

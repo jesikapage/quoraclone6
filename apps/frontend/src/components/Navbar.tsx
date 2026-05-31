@@ -2,9 +2,10 @@ import { useAuthStore } from "../stores/auth.store";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import {
   Home, Bell,
-  Search, ChevronDown, Globe, Plus, X, Menu,
+  Search, Plus, Globe, X, Menu,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useNotifications } from "../hooks/useNotifications";
 
 const C = {
   bg: "#181919",
@@ -190,6 +191,7 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const { unreadCount } = useNotifications();
 
   const user = authUser ?? { name: "Guest", avatar: null };
   const initials = user.name.split(" ").map((w: string) => w[0] || "").slice(0, 2).join("").toUpperCase() || "?";
@@ -216,6 +218,7 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             {NAV_ITEMS.map((item) => {
               const isActive = activeNav === item.to;
               const Icon = item.icon;
+              const isBell = item.icon === Bell;
               return (
                 <button
                   key={item.to}
@@ -232,7 +235,22 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
                   onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = C.surfaceHover; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                 >
-                  <Icon size={18} color={isActive ? C.red : C.textSecondary} />
+                  {/* Badge untuk Bell */}
+                  <div style={{ position: "relative" }}>
+                    <Icon size={18} color={isActive ? C.red : C.textSecondary} />
+                    {isBell && unreadCount > 0 && (
+                      <span style={{
+                        position: "absolute", top: -4, right: -6,
+                        background: C.red, color: "#fff",
+                        fontSize: 9, fontWeight: 700,
+                        padding: "1px 4px", borderRadius: 100,
+                        minWidth: 14, textAlign: "center",
+                        lineHeight: "14px",
+                      }}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </div>
                   <span>{item.label}</span>
                 </button>
               );
@@ -269,9 +287,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
             ) : (
               <button onClick={() => navigate("/login")} style={{ fontFamily: FONT, fontSize: 13, fontWeight: 500, color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3, padding: "4px 8px", background: C.surface, cursor: "pointer" }}>Masuk</button>
             )}
-            <button style={{ display: "flex", alignItems: "center", gap: 3, background: C.red, color: "#fff", border: "none", borderRadius: 3, padding: "5px 10px", fontFamily: FONT, fontSize: 13, fontWeight: 500, cursor: "pointer", whiteSpace: "nowrap" }}>
-              Tambah <ChevronDown size={12} />
-            </button>
           </div>
 
           <button
@@ -308,14 +323,33 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeNav === item.to;
+            const isBell = item.icon === Bell;
             return (
               <button
                 key={item.to}
                 onClick={() => handleNavClick(item.to)}
                 style={{ display: "flex", alignItems: "center", gap: 14, width: "100%", textAlign: "left", padding: "14px 16px", border: "none", borderBottom: `1px solid ${C.border}`, background: isActive ? "#3A7AEF18" : "none", color: isActive ? C.blue : C.textPrimary, fontFamily: FONT, fontSize: 14, cursor: "pointer" }}
               >
-                <Icon size={20} color={isActive ? C.blue : C.textSecondary} />
+                <div style={{ position: "relative" }}>
+                  <Icon size={20} color={isActive ? C.blue : C.textSecondary} />
+                  {isBell && unreadCount > 0 && (
+                    <span style={{
+                      position: "absolute", top: -4, right: -6,
+                      background: C.red, color: "#fff",
+                      fontSize: 9, fontWeight: 700,
+                      padding: "1px 4px", borderRadius: 100,
+                      minWidth: 14, textAlign: "center",
+                    }}>
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </div>
                 {item.label}
+                {isBell && unreadCount > 0 && (
+                  <span style={{ marginLeft: "auto", background: C.red, color: "#fff", fontSize: 11, fontWeight: 700, padding: "2px 7px", borderRadius: 100 }}>
+                    {unreadCount}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -326,9 +360,6 @@ export default function Navbar({ search, onSearchChange }: NavbarProps) {
               style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", border: "none", background: "none", color: C.textPrimary, fontFamily: FONT, fontSize: 14, cursor: "pointer", borderBottom: `1px solid ${C.border}` }}
             >
               👤 Edit Profil
-            </button>
-            <button style={{ display: "flex", alignItems: "center", gap: 4, background: C.red, color: "#fff", border: "none", borderRadius: 4, padding: "10px 16px", fontFamily: FONT, fontSize: 14, fontWeight: 600, cursor: "pointer", justifyContent: "center", marginTop: 4 }}>
-              <Plus size={16} /> Tambah Pertanyaan
             </button>
             {authUser
               ? <button onClick={handleLogout} style={{ padding: "10px 16px", border: `1px solid ${C.border}`, borderRadius: 4, background: "none", color: C.textSecondary, fontFamily: FONT, fontSize: 14, cursor: "pointer" }}>Keluar</button>

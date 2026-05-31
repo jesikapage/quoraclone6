@@ -7,11 +7,10 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "fallback_secret" }))
   .use(bearer())
 
-  // GET semua postingan (tidak perlu login)
   .get("/", async () => {
     const posts = await prisma.post.findMany({
       include: {
-        user: { select: { id: true, name: true, avatar: true } },
+        user: { select: { id: true, name: true, avatar: true, credential: true } },
         _count: { select: { comments: true, likes: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -19,14 +18,13 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     return posts;
   })
 
-  // GET detail 1 postingan
   .get("/:id", async ({ params, set }) => {
     const post = await prisma.post.findUnique({
       where: { id: params.id },
       include: {
-        user: { select: { id: true, name: true, avatar: true } },
+        user: { select: { id: true, name: true, avatar: true, credential: true } },
         comments: {
-          include: { user: { select: { id: true, name: true, avatar: true } } },
+          include: { user: { select: { id: true, name: true, avatar: true, credential: true } } },
           orderBy: { createdAt: "desc" },
         },
         _count: { select: { likes: true } },
@@ -36,14 +34,12 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     return post;
   })
 
-  // POST buat postingan baru (perlu login, max 2)
   .post("/", async ({ bearer, jwt, body, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
 
     const userId = payload.userId as string;
 
-    // Cek limit 2 post
     const postCount = await prisma.post.count({ where: { userId } });
     if (postCount >= 2) {
       set.status = 403;
@@ -52,7 +48,7 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
 
     const post = await prisma.post.create({
       data: { content: body.content, imageUrl: body.imageUrl, userId },
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: { user: { select: { id: true, name: true, avatar: true, credential: true } } },
     });
     return { message: "Post berhasil dibuat", post };
   }, {
@@ -62,7 +58,6 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     }),
   })
 
-  // PUT edit postingan (perlu login, harus pemilik)
   .put("/:id", async ({ bearer, jwt, params, body, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
@@ -83,7 +78,6 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     }),
   })
 
-  // DELETE postingan (perlu login, harus pemilik)
   .delete("/:id", async ({ bearer, jwt, params, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }

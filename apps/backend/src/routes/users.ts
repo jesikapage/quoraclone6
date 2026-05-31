@@ -25,7 +25,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
 
     const user = await prisma.user.findUnique({
       where: { id: payload.userId as string },
-      select: { id: true, name: true, email: true, avatar: true, createdAt: true },
+      select: { id: true, name: true, email: true, avatar: true, credential: true, bio: true, createdAt: true },
     });
     return user;
   })
@@ -40,6 +40,8 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     if (body.name) updateData.name = body.name;
     if (body.avatar) updateData.avatar = body.avatar;
     if (body.email) updateData.email = body.email;
+    if (body.credential !== undefined) updateData.credential = body.credential;
+    if (body.bio !== undefined) updateData.bio = body.bio;
 
     if (body.newPassword) {
       if (!body.currentPassword) {
@@ -62,7 +64,7 @@ export const userRoutes = new Elysia({ prefix: "/users" })
     const updated = await prisma.user.update({
       where: { id: userId },
       data: updateData,
-      select: { id: true, name: true, email: true, avatar: true },
+      select: { id: true, name: true, email: true, avatar: true, credential: true, bio: true },
     });
 
     return { message: "Profile berhasil diupdate", user: updated };
@@ -71,6 +73,8 @@ export const userRoutes = new Elysia({ prefix: "/users" })
       name: t.Optional(t.String()),
       email: t.Optional(t.String()),
       avatar: t.Optional(t.String()),
+      credential: t.Optional(t.String()),
+      bio: t.Optional(t.String()),
       currentPassword: t.Optional(t.String()),
       newPassword: t.Optional(t.String()),
     }),

@@ -136,7 +136,7 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-ap-southeast-1-cded7ee2-ac8a",
-                "S3Key": "serverless/kurakura-backend/dev/1780148817153-2026-05-30T13:46:57.153Z/kurakura-backend.zip"
+                "S3Key": "serverless/kurakura-backend/dev/1780223095051-2026-05-31T10:24:55.051Z/kurakura-backend.zip"
               },
               "Handler": "src/index.handler",
               "Runtime": "nodejs20.x",
@@ -161,14 +161,14 @@
               "ApiLogGroup"
             ]
           },
-          "ApiLambdaVersionkg3ExNKsPotQiJeBP5I5eRfo6SVLSc1jCfREuijA0": {
+          "ApiLambdaVersionubM2GiKindEU0UiimUWJlOT0nYoB4LKnX7pvIyIa4": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ApiLambdaFunction"
               },
-              "CodeSha256": "W8/8Szgcg8vM58sutMz27YZAqkb/KyTMogMB5Bk/jpQ="
+              "CodeSha256": "VbqiMWGImKzpwa16+cgkEe9gGZY58zr1aiVJAh/V+RQ="
             }
           },
           "HttpApi": {
@@ -295,7 +295,7 @@
           "ApiLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApiLambdaVersionkg3ExNKsPotQiJeBP5I5eRfo6SVLSc1jCfREuijA0"
+              "Ref": "ApiLambdaVersionubM2GiKindEU0UiimUWJlOT0nYoB4LKnX7pvIyIa4"
             },
             "Export": {
               "Name": "sls-kurakura-backend-dev-ApiLambdaFunctionQualifiedArn"
@@ -368,7 +368,7 @@
         "memory": 512,
         "runtime": "nodejs20.x",
         "vpc": {},
-        "versionLogicalId": "ApiLambdaVersionkg3ExNKsPotQiJeBP5I5eRfo6SVLSc1jCfREuijA0"
+        "versionLogicalId": "ApiLambdaVersionubM2GiKindEU0UiimUWJlOT0nYoB4LKnX7pvIyIa4"
       }
     },
     "configValidationMode": "warn",
@@ -390,7 +390,7 @@
         "artifactsS3KeyDirname": "serverless/kurakura-backend/dev/code-artifacts",
         "deploymentBucket": "serverless-framework-deployments-ap-southeast-1-cded7ee2-ac8a",
         "artifact": "D:\\PPWL 2026\\kurakura\\social-media-app\\apps\\backend\\.serverless\\kurakura-backend.zip",
-        "artifactDirectoryName": "serverless/kurakura-backend/dev/1780148817153-2026-05-30T13:46:57.153Z"
+        "artifactDirectoryName": "serverless/kurakura-backend/dev/1780223095051-2026-05-31T10:24:55.051Z"
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
@@ -415,7 +415,7 @@
     "layers": {}
   },
   "package": {
-    "artifactDirectoryName": "serverless/kurakura-backend/dev/1780148817153-2026-05-30T13:46:57.153Z",
+    "artifactDirectoryName": "serverless/kurakura-backend/dev/1780223095051-2026-05-31T10:24:55.051Z",
     "artifact": "kurakura-backend.zip"
   }
 }
