@@ -48,7 +48,18 @@ export const handler = async (event: any) => {
     });
 
     const response = await app.handle(request);
+
+    // Baca response sebagai text
     const responseText = await response.text();
+
+    // Parse dan stringify ulang untuk memastikan tidak double-encoded
+    let finalBody: string;
+    try {
+      const parsed = JSON.parse(responseText);
+      finalBody = JSON.stringify(parsed);
+    } catch {
+      finalBody = responseText;
+    }
 
     return {
       statusCode: response.status,
@@ -57,16 +68,19 @@ export const handler = async (event: any) => {
         "access-control-allow-origin": "*",
         "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
         "access-control-allow-headers": "*",
-        ...Object.fromEntries(response.headers.entries()),
       },
-      body: responseText,
+      body: finalBody,
       isBase64Encoded: false,
     };
   } catch (error: any) {
     return {
       statusCode: 500,
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*",
+      },
       body: JSON.stringify({ error: "Server Error", message: error.message }),
+      isBase64Encoded: false,
     };
   }
 };

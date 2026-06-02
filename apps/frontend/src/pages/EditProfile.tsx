@@ -1,21 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
+import { useImageUpload } from '../hooks/useImageUpload';
 import Navbar from '../components/Navbar';
 
 const C = {
-  bg: '#181818',
-  surface: '#242424',
-  surfaceHover: '#2d2d2d',
-  border: '#393939',
-  textPrimary: '#D5D6D7',
-  textSecondary: '#B1B3B6',
-  textMuted: '#87898c',
-  blue: '#3A7AEF',
-  blueBg: '#3A7AEF1a',
-  red: '#b92b27',
-  redBg: '#b92b271a',
-  green: '#1D9E75',
+  bg: '#181818', surface: '#242424', surfaceHover: '#2d2d2d',
+  border: '#393939', textPrimary: '#D5D6D7', textSecondary: '#B1B3B6',
+  textMuted: '#87898c', blue: '#3A7AEF', blueBg: '#3A7AEF1a',
+  red: '#b92b27', redBg: '#b92b271a', green: '#1D9E75',
 };
 const FONT = "-apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
@@ -89,8 +82,7 @@ function DraggableAvatar({ src, initials, size = 80, offsetX, offsetY, onOffsetC
       title={src ? 'Geser untuk mengatur posisi foto' : undefined}
     >
       {src ? (
-        <img
-          src={src} alt="Avatar" draggable={false}
+        <img src={src} alt="Avatar" draggable={false}
           style={{
             width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none',
             objectPosition: `calc(50% + ${offsetX}px) calc(50% + ${offsetY}px)`,
@@ -110,25 +102,25 @@ function DraggableAvatar({ src, initials, size = 80, offsetX, offsetY, onOffsetC
 const EditProfile = () => {
   const navigate = useNavigate();
   const { user, setAuth, token } = useAuthStore();
+  const { uploadImage } = useImageUpload();
 
   const nameParts = (user?.name || '').split(' ');
   const [firstName, setFirstName] = useState(nameParts[0] || '');
   const [lastName, setLastName] = useState(nameParts.slice(1).join(' ') || '');
-  const [credential, setCredential] = useState(user?.credential || '');
-  const [bio, setBio] = useState(user?.bio || '');
+  const [credential, setCredential] = useState((user as any)?.credential || '');
+  const [bio, setBio] = useState((user as any)?.bio || '');
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(user?.avatar || null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarOffsetX, setAvatarOffsetX] = useState(0);
   const [avatarOffsetY, setAvatarOffsetY] = useState(0);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
+  useEffect(() => { setAvatarPreview(user?.avatar || null); }, [user?.avatar]);
   useEffect(() => {
-    setAvatarPreview(user?.avatar || null);
-  }, [user?.avatar]);
-
-  useEffect(() => {
-    setCredential(user?.credential || '');
-    setBio(user?.bio || '');
-  }, [user?.credential, user?.bio]);
+    setCredential((user as any)?.credential || '');
+    setBio((user as any)?.bio || '');
+  }, [(user as any)?.credential, (user as any)?.bio]);
 
   const [currPass, setCurrPass] = useState('');
   const [newPass, setNewPass] = useState('');
@@ -154,23 +146,25 @@ const EditProfile = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { showAlertMsg('error', 'Ukuran file maksimal 5MB.'); return; }
+    if (!file.type.startsWith('image/')) { showAlertMsg('error', 'File harus berupa gambar.'); return; }
+
+    // Simpan file untuk upload nanti, dan buat preview lokal
+    setAvatarFile(file);
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setAvatarPreview(dataUrl);
+      setAvatarPreview(ev.target?.result as string);
       setAvatarOffsetX(0);
       setAvatarOffsetY(0);
-      if (user && token) setAuth({ ...user, avatar: dataUrl }, token);
     };
     reader.readAsDataURL(file);
   }
 
   function removeAvatar() {
     setAvatarPreview(null);
+    setAvatarFile(null);
     setAvatarOffsetX(0);
     setAvatarOffsetY(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
-    if (user && token) setAuth({ ...user, avatar: null }, token);
   }
 
   function getStrength(val: string) {
@@ -190,29 +184,51 @@ const EditProfile = () => {
     e.preventDefault();
     if (!firstName.trim()) { showAlertMsg('error', 'Nama depan wajib diisi.'); return; }
     if (!token) { showAlertMsg('error', 'Sesi habis, silakan login ulang.'); return; }
+
     try {
+      // Upload avatar ke S3 dulu kalau ada file baru
+      let avatarUrl: string | undefined = user?.avatar || undefined;
+      if (avatarFile) {
+        setIsUploadingAvatar(true);
+        const uploaded = await uploadImage(avatarFile);
+        setIsUploadingAvatar(false);
+        if (!uploaded) {
+          showAlertMsg('error', 'Gagal upload foto profil. Coba lagi.');
+          return;
+        }
+        avatarUrl = uploaded;
+        setAvatarPreview(uploaded);
+        setAvatarFile(null);
+      } else if (avatarPreview === null) {
+        // User hapus avatar
+        avatarUrl = undefined;
+      }
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/users/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           name: fullName,
-          avatar: avatarPreview || undefined,
+          avatar: avatarUrl || null,
           credential: credential || undefined,
           bio: bio || undefined,
         }),
       });
+
       const data = await res.json();
       if (!res.ok) { showAlertMsg('error', data.error || 'Gagal menyimpan profil.'); return; }
+
       if (user) setAuth({
         ...user,
         name: fullName,
-        avatar: avatarPreview || user.avatar,
-        credential: credential || user.credential,
-        bio: bio || user.bio,
+        avatar: avatarUrl || null,
       }, token);
+
       showAlertMsg('success', 'Profil berhasil disimpan!');
     } catch {
       showAlertMsg('error', 'Koneksi ke server gagal.');
+    } finally {
+      setIsUploadingAvatar(false);
     }
   }
 
@@ -249,6 +265,8 @@ const EditProfile = () => {
   const blurBorder = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     (e.target.style.borderColor = C.border);
 
+  const isSaving = isUploadingAvatar;
+
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: FONT }}>
       <Navbar search={search} onSearchChange={setSearch} />
@@ -279,9 +297,7 @@ const EditProfile = () => {
             ] as const).map((item) => {
               const isActive = activeTab === item.key;
               return (
-                <button
-                  key={item.key}
-                  onClick={() => setActiveTab(item.key)}
+                <button key={item.key} onClick={() => setActiveTab(item.key)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
                     textAlign: 'left', padding: '10px 16px', border: 'none',
@@ -303,7 +319,6 @@ const EditProfile = () => {
         </aside>
 
         <div style={{ flex: 1, minWidth: 0, maxWidth: 700 }}>
-
           {alert && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px',
@@ -331,6 +346,11 @@ const EditProfile = () => {
                       offsetX={avatarOffsetX} offsetY={avatarOffsetY}
                       onOffsetChange={(x, y) => { setAvatarOffsetX(x); setAvatarOffsetY(y); }}
                     />
+                    {isUploadingAvatar && (
+                      <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>Upload...</span>
+                      </div>
+                    )}
                     <div
                       className="ep-avatar-overlay"
                       onClick={() => fileInputRef.current?.click()}
@@ -351,9 +371,13 @@ const EditProfile = () => {
 
                   <div>
                     <p style={{ fontSize: 15, fontWeight: 700, color: C.textPrimary, margin: '0 0 10px' }}>{fullName}</p>
+                    {avatarFile && (
+                      <p style={{ fontSize: 11, color: C.blue, margin: '0 0 8px', fontFamily: FONT }}>
+                        📎 {avatarFile.name} — akan diupload saat simpan
+                      </p>
+                    )}
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <button
-                        type="button" onClick={() => fileInputRef.current?.click()}
+                      <button type="button" onClick={() => fileInputRef.current?.click()}
                         style={{ fontSize: 13, fontWeight: 600, color: C.blue, border: `1px solid ${C.blue}`, borderRadius: 3, padding: '6px 14px', background: 'none', cursor: 'pointer', fontFamily: FONT }}
                         onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = C.blueBg}
                         onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = 'none'}
@@ -361,8 +385,7 @@ const EditProfile = () => {
                         Upload Foto Profil
                       </button>
                       {avatarPreview && (
-                        <button
-                          type="button" onClick={removeAvatar}
+                        <button type="button" onClick={removeAvatar}
                           style={{ fontSize: 13, fontWeight: 600, color: C.textSecondary, border: `1px solid ${C.border}`, borderRadius: 3, padding: '6px 14px', background: 'none', cursor: 'pointer', fontFamily: FONT }}
                           onMouseEnter={(e) => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = C.red; b.style.color = C.red; }}
                           onMouseLeave={(e) => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = C.border; b.style.color = C.textSecondary; }}
@@ -412,12 +435,12 @@ const EditProfile = () => {
                   <button type="button" onClick={() => navigate('/')} style={{ border: `1px solid ${C.border}`, color: C.textSecondary, fontSize: 13, fontWeight: 600, padding: '8px 20px', borderRadius: 100, background: 'none', cursor: 'pointer', fontFamily: FONT }}>
                     Batal
                   </button>
-                  <button type="submit"
-                    style={{ background: C.blue, color: '#fff', fontSize: 13, fontWeight: 700, padding: '8px 22px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: FONT }}
-                    onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = '#1c5bbf'}
-                    onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = C.blue}
+                  <button type="submit" disabled={isSaving}
+                    style={{ background: isSaving ? '#555' : C.blue, color: '#fff', fontSize: 13, fontWeight: 700, padding: '8px 22px', borderRadius: 100, border: 'none', cursor: isSaving ? 'not-allowed' : 'pointer', fontFamily: FONT }}
+                    onMouseEnter={(e) => { if (!isSaving) (e.currentTarget as HTMLButtonElement).style.background = '#1c5bbf'; }}
+                    onMouseLeave={(e) => { if (!isSaving) (e.currentTarget as HTMLButtonElement).style.background = C.blue; }}
                   >
-                    Simpan Perubahan
+                    {isSaving ? 'Mengupload...' : 'Simpan Perubahan'}
                   </button>
                 </div>
               </form>
@@ -505,13 +528,9 @@ const EditProfile = () => {
 
       <style>{`
         .ep-sidebar { display: block; }
-        @media (max-width: 640px) {
-          .ep-sidebar { display: none; }
-        }
+        @media (max-width: 640px) { .ep-sidebar { display: none; } }
         .ep-avatar-overlay:hover { opacity: 1 !important; }
-        @media (hover: none) {
-          .ep-avatar-overlay { opacity: 0.6 !important; }
-        }
+        @media (hover: none) { .ep-avatar-overlay { opacity: 0.6 !important; } }
       `}</style>
     </div>
   );

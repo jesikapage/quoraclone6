@@ -7,8 +7,15 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
   .use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "fallback_secret" }))
   .use(bearer())
 
-  .get("/", async () => {
+  // GET semua postingan dengan pagination
+  .get("/", async ({ query }) => {
+    const page = parseInt((query as any).page || "1");
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
     const posts = await prisma.post.findMany({
+      take: limit,
+      skip,
       include: {
         user: { select: { id: true, name: true, avatar: true, credential: true } },
         _count: { select: { comments: true, likes: true } },
@@ -18,6 +25,7 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     return posts;
   })
 
+  // GET detail 1 postingan
   .get("/:id", async ({ params, set }) => {
     const post = await prisma.post.findUnique({
       where: { id: params.id },
@@ -34,6 +42,7 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     return post;
   })
 
+  // POST buat postingan baru
   .post("/", async ({ bearer, jwt, body, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
@@ -58,6 +67,7 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     }),
   })
 
+  // PUT edit postingan
   .put("/:id", async ({ bearer, jwt, params, body, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }
@@ -78,6 +88,7 @@ export const postRoutes = new Elysia({ prefix: "/posts" })
     }),
   })
 
+  // DELETE postingan
   .delete("/:id", async ({ bearer, jwt, params, set }) => {
     const payload = await jwt.verify(bearer);
     if (!payload) { set.status = 401; return { error: "Unauthorized" }; }

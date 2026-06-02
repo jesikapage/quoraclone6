@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth.store';
-import { ThumbsUp, ThumbsDown, MessageCircle, Repeat2, MoreHorizontal, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, MessageCircle, MoreHorizontal, X, Edit2, Trash2 } from 'lucide-react';
 
 const C = {
   bg: "#181818",
@@ -50,6 +50,12 @@ export default function DetailPost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // State untuk edit komentar
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editCommentContent, setEditCommentContent] = useState('');
+  const [isEditingComment, setIsEditingComment] = useState(false);
+
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
   const currentUserAvatar = (authUser as any)?.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${authUser?.name || 'Guest'}`;
 
   useEffect(() => {
@@ -99,6 +105,53 @@ export default function DetailPost() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEditComment = async (commentId: string) => {
+    if (!editCommentContent.trim() || !token) return;
+    setIsEditingComment(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/comments/comment/${commentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content: editCommentContent }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Gagal mengedit komentar.'); return; }
+      setPost((prev) => prev ? {
+        ...prev,
+        comments: prev.comments.map((c) => c.id === commentId ? data.comment : c)
+      } : prev);
+      setEditingCommentId(null);
+      setEditCommentContent('');
+    } catch {
+      setError('Koneksi ke server gagal.');
+    } finally {
+      setIsEditingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm('Yakin ingin menghapus komentar ini?')) return;
+    if (!token) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/comments/comment/${commentId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) { setError('Gagal menghapus komentar.'); return; }
+      setPost((prev) => prev ? {
+        ...prev,
+        comments: prev.comments.filter((c) => c.id !== commentId)
+      } : prev);
+    } catch {
+      setError('Koneksi ke server gagal.');
+    }
+  };
+
+  const scrollToComment = () => {
+    commentInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    commentInputRef.current?.focus();
   };
 
   if (!post) return (
@@ -169,14 +222,13 @@ export default function DetailPost() {
               </button>
             </div>
 
-            <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
+            {/* Tombol komentar — scroll ke form */}
+            <button
+              onClick={scrollToComment}
+              style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 10px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}
+            >
               <MessageCircle size={16} />
-              <span className="dp-action-label"> {post.comments.length}</span>
-            </button>
-
-            <button style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 8px", borderRadius: 100, border: "none", background: "transparent", fontFamily: FONT, fontSize: 13, fontWeight: 600, color: C.textSecondary, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }}>
-              <Repeat2 size={16} />
-              <span className="dp-action-label"> {Math.floor(Math.random() * 100)}</span>
+              <span className="dp-action-label"> {post.comments.length} Komentar</span>
             </button>
 
             <button style={{ marginLeft: "auto", color: C.textSecondary, background: "transparent", border: "none", cursor: "pointer", padding: "6px", flexShrink: 0 }}>
@@ -195,6 +247,7 @@ export default function DetailPost() {
             />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
               <textarea
+                ref={commentInputRef}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={token ? "Tambahkan komentar..." : "Login dulu untuk berkomentar"}
@@ -209,7 +262,7 @@ export default function DetailPost() {
               />
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="submit" disabled={isSubmitting || !newComment.trim()}
-                  style={{ background: isSubmitting || !newComment.trim() ? '#444' : C.blue, color: isSubmitting || !newComment.trim() ? '#888' : '#fff', border: 'none', borderRadius: 100, padding: '6px 16px', fontSize: 14, fontWeight: 600, cursor: isSubmitting || !newComment.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
+                  style={{ background: isSubmitting || !newComment.trim() ? '#444' : C.blue, color: isSubmitting || !newComment.trim() ? '#888' : '#fff', border: 'none', borderRadius: 100, padding: '6px 16px', fontSize: 14, fontWeight: 600, cursor: isSubmitting || !newComment.trim() ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
                   Tambahkan Komentar
                 </button>
               </div>
@@ -226,30 +279,82 @@ export default function DetailPost() {
             </div>
           ) : (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 4 }}>
-              {post.comments.map((comment, index) => (
-                <div key={comment.id} style={{ padding: "16px", borderBottom: index === post.comments.length - 1 ? 'none' : `1px solid ${C.border}` }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    <img
-                      src={comment.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${comment.user.name}`}
-                      alt={comment.user.name}
-                      style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
-                        <span style={{ color: C.textPrimary, fontWeight: 700, fontSize: 14 }}>{comment.user.name}</span>
-                        <span style={{ color: C.textMuted, fontSize: 13 }}>· {timeAgo(comment.createdAt)}</span>
+              {post.comments.map((comment, index) => {
+                const isCommentOwner = authUser?.id === comment.user.id;
+                const isEditing = editingCommentId === comment.id;
+
+                return (
+                  <div key={comment.id} style={{ padding: "16px", borderBottom: index === post.comments.length - 1 ? 'none' : `1px solid ${C.border}` }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                      <img
+                        src={comment.user.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${comment.user.name}`}
+                        alt={comment.user.name}
+                        style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                            <span style={{ color: C.textPrimary, fontWeight: 700, fontSize: 14 }}>{comment.user.name}</span>
+                            <span style={{ color: C.textMuted, fontSize: 13 }}>· {timeAgo(comment.createdAt)}</span>
+                          </div>
+                          {/* Menu edit/hapus hanya untuk pemilik komentar */}
+                          {isCommentOwner && !isEditing && (
+                            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                              <button
+                                onClick={() => { setEditingCommentId(comment.id); setEditCommentContent(comment.content); }}
+                                style={{ background: 'transparent', border: 'none', color: C.textMuted, cursor: 'pointer', padding: '2px 6px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
+                                title="Edit komentar"
+                              >
+                                <Edit2 size={13} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                style={{ background: 'transparent', border: 'none', color: C.red, cursor: 'pointer', padding: '2px 6px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}
+                                title="Hapus komentar"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {isEditing ? (
+                          <div>
+                            <textarea
+                              autoFocus
+                              value={editCommentContent}
+                              onChange={(e) => setEditCommentContent(e.target.value)}
+                              style={{ width: '100%', background: '#181818', border: `1px solid ${C.blue}`, outline: 'none', color: C.textPrimary, fontFamily: FONT, fontSize: 14, padding: '8px 10px', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', minHeight: 70 }}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
+                              <button
+                                onClick={() => { setEditingCommentId(null); setEditCommentContent(''); }}
+                                style={{ background: 'transparent', color: C.textSecondary, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                              >
+                                Batal
+                              </button>
+                              <button
+                                onClick={() => handleEditComment(comment.id)}
+                                disabled={isEditingComment || !editCommentContent.trim() || editCommentContent === comment.content}
+                                style={{ background: C.blue, color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 100, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: isEditingComment || !editCommentContent.trim() || editCommentContent === comment.content ? 0.5 : 1 }}
+                              >
+                                {isEditingComment ? 'Menyimpan...' : 'Simpan'}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p style={{ color: C.textPrimary, fontSize: 15, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {comment.content}
+                          </p>
+                        )}
                       </div>
-                      <p style={{ color: C.textPrimary, fontSize: 15, margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                        {comment.content}
-                      </p>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
-
       </div>
 
       <style>{`

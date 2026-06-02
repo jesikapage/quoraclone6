@@ -54529,8 +54529,13 @@ var bearer = ({
 );
 
 // src/routes/posts.ts
-var postRoutes = new Elysia({ prefix: "/posts" }).use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "fallback_secret" })).use(bearer()).get("/", async () => {
+var postRoutes = new Elysia({ prefix: "/posts" }).use(jwt({ name: "jwt", secret: process.env.JWT_SECRET || "fallback_secret" })).use(bearer()).get("/", async ({ query }) => {
+  const page = parseInt(query.page || "1");
+  const limit = 10;
+  const skip2 = (page - 1) * limit;
   const posts = await prisma_default.post.findMany({
+    take: limit,
+    skip: skip2,
     include: {
       user: { select: { id: true, name: true, avatar: true, credential: true } },
       _count: { select: { comments: true, likes: true } }
@@ -54669,6 +54674,48 @@ var commentRoutes = new Elysia({ prefix: "/comments" }).use(jwt({ name: "jwt", s
   body: t.Object({
     content: t.String({ minLength: 1 })
   })
+}).put("/comment/:commentId", async ({ params, bearer: bearer2, jwt: jwt2, body, set }) => {
+  const payload = await jwt2.verify(bearer2);
+  if (!payload) {
+    set.status = 401;
+    return { error: "Unauthorized" };
+  }
+  const comment = await prisma_default.comment.findUnique({ where: { id: params.commentId } });
+  if (!comment) {
+    set.status = 404;
+    return { error: "Komentar tidak ditemukan" };
+  }
+  if (comment.userId !== payload.userId) {
+    set.status = 403;
+    return { error: "Forbidden" };
+  }
+  const updated = await prisma_default.comment.update({
+    where: { id: params.commentId },
+    data: { content: body.content },
+    include: { user: { select: { id: true, name: true, avatar: true } } }
+  });
+  return { message: "Komentar berhasil diupdate", comment: updated };
+}, {
+  body: t.Object({
+    content: t.String({ minLength: 1 })
+  })
+}).delete("/comment/:commentId", async ({ params, bearer: bearer2, jwt: jwt2, set }) => {
+  const payload = await jwt2.verify(bearer2);
+  if (!payload) {
+    set.status = 401;
+    return { error: "Unauthorized" };
+  }
+  const comment = await prisma_default.comment.findUnique({ where: { id: params.commentId } });
+  if (!comment) {
+    set.status = 404;
+    return { error: "Komentar tidak ditemukan" };
+  }
+  if (comment.userId !== payload.userId) {
+    set.status = 403;
+    return { error: "Forbidden" };
+  }
+  await prisma_default.comment.delete({ where: { id: params.commentId } });
+  return { message: "Komentar berhasil dihapus" };
 });
 
 // src/routes/likes.ts
@@ -54831,23 +54878,33 @@ var handler = async (event) => {
     });
     const response = await app.handle(request);
     const responseText = await response.text();
+    let finalBody;
+    try {
+      const parsed = JSON.parse(responseText);
+      finalBody = JSON.stringify(parsed);
+    } catch {
+      finalBody = responseText;
+    }
     return {
       statusCode: response.status,
       headers: {
         "content-type": "application/json",
         "access-control-allow-origin": "*",
         "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "access-control-allow-headers": "*",
-        ...Object.fromEntries(response.headers.entries())
+        "access-control-allow-headers": "*"
       },
-      body: responseText,
+      body: finalBody,
       isBase64Encoded: false
     };
   } catch (error) {
     return {
       statusCode: 500,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "Server Error", message: error.message })
+      headers: {
+        "content-type": "application/json",
+        "access-control-allow-origin": "*"
+      },
+      body: JSON.stringify({ error: "Server Error", message: error.message }),
+      isBase64Encoded: false
     };
   }
 };

@@ -107,7 +107,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-ap-southeast-1-cded7ee2-ac8a",
-          "S3Key": "serverless/kurakura-backend/dev/1780223095051-2026-05-31T10:24:55.051Z/kurakura-backend.zip"
+          "S3Key": "serverless/kurakura-backend/dev/1780369315378-2026-06-02T03:01:55.378Z/kurakura-backend.zip"
         },
         "Handler": "src/index.handler",
         "Runtime": "nodejs20.x",
@@ -132,14 +132,14 @@
         "ApiLogGroup"
       ]
     },
-    "ApiLambdaVersionubM2GiKindEU0UiimUWJlOT0nYoB4LKnX7pvIyIa4": {
+    "ApiLambdaVersion5ywaUXSJsWYGZYn7FMZXbvMANpb88aiLZVbPcFRTZQ": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ApiLambdaFunction"
         },
-        "CodeSha256": "VbqiMWGImKzpwa16+cgkEe9gGZY58zr1aiVJAh/V+RQ="
+        "CodeSha256": "eVL6HbKixowKfHypvPeR6+lBIXFb1dSKvSLj8ql1/uQ="
       }
     },
     "HttpApi": {
@@ -269,7 +269,7 @@
     "ApiLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ApiLambdaVersionubM2GiKindEU0UiimUWJlOT0nYoB4LKnX7pvIyIa4"
+        "Ref": "ApiLambdaVersion5ywaUXSJsWYGZYn7FMZXbvMANpb88aiLZVbPcFRTZQ"
       },
       "Export": {
         "Name": "sls-kurakura-backend-dev-ApiLambdaFunctionQualifiedArn"
